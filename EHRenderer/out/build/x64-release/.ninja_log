@@ -1,0 +1,12 @@
+# ninja log v6
+9	43	7867069611180521	EHRenderer/CMakeFiles/EHRenderer.dir/InputClass.cpp.obj	4127b39c7d2a8d20
+6	502	7867065585690395	EHRenderer/CMakeFiles/EHRenderer.dir/main.cpp.obj	454e2b6756977706
+19	210	7867272876929642	EHRenderer/CMakeFiles/EHRenderer.dir/DirectX11/CameraClass.cpp.obj	de8752cae554cf14
+5	553	7867072594354470	EHRenderer/CMakeFiles/EHRenderer.dir/DirectX11/D3DClass.cpp.obj	9e092fd53c2f1913
+16	584	7867069611250524	EHRenderer/CMakeFiles/EHRenderer.dir/D3DClass.cpp.obj	640eba4de9ec3e18
+7	557	7867256270518803	EHRenderer/CMakeFiles/EHRenderer.dir/SystemClass.cpp.obj	275e9ab8e07f72cc
+5	927	7867267354746187	EHRenderer/CMakeFiles/EHRenderer.dir/ApplicationClass.cpp.obj	edbfad5caaead791
+965	1066	7867410448906477	EHRenderer/EHRenderer.exe	748fcac5d180a8ee
+21	565	7867303933248779	EHRenderer/CMakeFiles/EHRenderer.dir/DirectX11/Model/ModelClass.cpp.obj	2f80cca839e0db6c
+5	964	7867410439312557	EHRenderer/CMakeFiles/EHRenderer.dir/DirectX11/Shader/Color/ColorShaderClass.cpp.obj	a233488fa5c3e0ba
+4	157	7867410828906519	build.ninja	61322abb8f03dd84
