@@ -6,9 +6,17 @@
 add_executable (EHRenderer WIN32
 	"main.cpp" "EHRenderer.h" "SystemClass.cpp" "InputClass.cpp" "ApplicationClass.cpp" 
 	"DirectX11/D3DClass.cpp" "DirectX11/CameraClass.cpp"
-	"DirectX11/Model/ModelClass.cpp" 
+
+	"DirectX11/Model/SimpleModelClass.cpp" 
+	"DirectX11/Model/ModelClass.cpp"
+
 	"DirectX11/Shader/Color/ColorShaderClass.cpp"
-)
+	"DirectX11/Shader/Texture/TextureshaderClass.cpp"
+	"DirectX11/Shader/Light/LightShaderClass.cpp"
+
+	"DirectX11/Shader/TextureClass.cpp"
+	"DirectX11/Shader/LIghtClass.cpp")
+
 
 # target_link_libraries (EHRenderer PUBLIC "wrl.lib")
 target_link_libraries (EHRenderer PUBLIC "dxgi.lib")

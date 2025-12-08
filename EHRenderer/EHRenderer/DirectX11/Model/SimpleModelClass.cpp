@@ -1,63 +1,69 @@
-#include "ModelClass.hpp"
-
-#include <memory>
+#include "SimpleModelClass.hpp"
 #include "../Shader/TextureClass.hpp"
 
-ModelClass::ModelClass()
+SimpleModelClass::SimpleModelClass()
 {
 
 }
 
-ModelClass::ModelClass(const ModelClass&)
+SimpleModelClass::SimpleModelClass(const SimpleModelClass&)
 {
 
 }
 
-ModelClass::~ModelClass()
+SimpleModelClass::~SimpleModelClass()
 {
 
 }
 
-bool ModelClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext,
-	char* modelFilename, char* textureFilename)
+bool SimpleModelClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, char* textureFilename)
 {
-	if (!LoadModel(modelFilename)) return false;
 	if (!InitializeBuffers(device)) return false;
 
 	return LoadTexture(device, deviceContext, textureFilename);
 }
 
-void ModelClass::Shutdown() {
+void SimpleModelClass::Shutdown() {
 	ReleaseTexture();
 	ShutdownBuffers();
 }
 
-void ModelClass::Render(ID3D11DeviceContext* deviceContext)
+void SimpleModelClass::Render(ID3D11DeviceContext* deviceContext)
 {
 	RenderBuffers(deviceContext);
 }
 
-int ModelClass::GetIndexCount()
+int SimpleModelClass::GetIndexCount()
 {
 	return _indexCount;
 }
 
-bool ModelClass::InitializeBuffers(ID3D11Device* device)
+bool SimpleModelClass::InitializeBuffers(ID3D11Device* device)
 {
+	_vertexCount = 3;
+	_indexCount = 3;
 
 	VertexType* vertices = new VertexType[_vertexCount];
 	if (!vertices) return false;
 
+	vertices[0].position = XMFLOAT3(-1.0f, -1.0f, 0.0f);
+	vertices[0].texture = XMFLOAT2(0.f, 1.f);
+	vertices[0].normal = XMFLOAT3(0.f, 0.f,  -1.f);
+
+	vertices[1].position = XMFLOAT3(0.f, 1.0f, 0.0f);
+	vertices[1].texture = XMFLOAT2(0.5f, 0.f);
+	vertices[1].normal = XMFLOAT3(0.f, 0.f, -1.f);
+
+	vertices[2].position = XMFLOAT3(1.0f, -1.0f, 0.0f);
+	vertices[2].texture = XMFLOAT2(1.f, 1.f);
+	vertices[2].normal = XMFLOAT3(0.f, 0.f, -1.f);
+
 	unsigned long* indices = new unsigned long[_indexCount];
 	if (!indices) return false;
 
-	for (int i = 0; i < _vertexCount; i++) {
-		vertices[i].position = XMFLOAT3(_model[i].x, _model[i].y, _model[i].z);
-		vertices[i].texture = XMFLOAT2(_model[i].tu, _model[i].tv);
-		vertices[i].normal = XMFLOAT3(_model[i].nx, _model[i].ny, _model[i].nz);
-
-		indices[i] = i;
-	}
+	indices[0] = 0;
+	indices[1] = 1;
+	indices[2] = 2;
 
 	D3D11_BUFFER_DESC vertexBufferDesc;
 	D3D11_SUBRESOURCE_DATA vertexData;
@@ -91,8 +97,8 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 	indexData.SysMemPitch = 0;
 	indexData.SysMemSlicePitch = 0;
 
-	if (FAILED(device->CreateBuffer(&indexBufferDesc, &indexData,
-		_indexBuffer.GetAddressOf()))) {
+	if (FAILED(device->CreateBuffer(&indexBufferDesc, &indexData, 
+			_indexBuffer.GetAddressOf()))) { 
 		return false;
 	}
 
@@ -102,12 +108,12 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 	return true;
 }
 
-void ModelClass::ShutdownBuffers()
+void SimpleModelClass::ShutdownBuffers()
 {
 
 }
 
-void ModelClass::RenderBuffers(ID3D11DeviceContext* deviceContext)
+void SimpleModelClass::RenderBuffers(ID3D11DeviceContext* deviceContext)
 {
 	unsigned int stride = sizeof(VertexType);
 	unsigned int offset = 0;
@@ -118,11 +124,11 @@ void ModelClass::RenderBuffers(ID3D11DeviceContext* deviceContext)
 
 }
 
-ID3D11ShaderResourceView* ModelClass::GetTexture() {
+ID3D11ShaderResourceView* SimpleModelClass::GetTexture() {
 	return _texture->GetTexture();
 }
 
-bool ModelClass::LoadTexture(ID3D11Device* device,
+bool SimpleModelClass::LoadTexture(ID3D11Device* device,
 	ID3D11DeviceContext* deviceContext, char* filename)
 {
 	_texture = std::make_unique<TextureClass>();
@@ -132,48 +138,6 @@ bool ModelClass::LoadTexture(ID3D11Device* device,
 	return true;
 }
 
-void ModelClass::ReleaseTexture()
-{
-}
-
-bool ModelClass::LoadModel(char* filename)
-{
-	ifstream fin;
-	char input;
-	fin.open(filename);
-
-	if (fin.fail()) return false;
-
-	fin.get(input);
-	while (input != ':') {
-		fin.get(input);
-	}
-
-	fin >> _vertexCount;
-	_indexCount = _vertexCount;
-
-	_model = make_unique<ModelType[]>(_vertexCount);
-
-	fin.get(input);
-	while (input != ':') {
-		fin.get(input);
-	}
-
-	fin.get(input);
-	fin.get(input);
-
-	for (int i = 0; i < _vertexCount; i++) {
-		fin >> _model[i].x >> _model[i].y >> _model[i].z;
-		fin >> _model[i].tu >> _model[i].tv;
-		fin >> _model[i].nx >> _model[i].ny >> _model[i].nz;
-	}
-
-	fin.close();
-
-
-	return true;
-}
-
-void ModelClass::ReleaseModel()
+void SimpleModelClass::ReleaseTexture()
 {
 }

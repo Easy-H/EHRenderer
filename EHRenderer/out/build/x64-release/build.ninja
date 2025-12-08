@@ -119,6 +119,13 @@ build EHRenderer\CMakeFiles\EHRenderer.dir\DirectX11\CameraClass.cpp.obj: CXX_CO
   TARGET_COMPILE_PDB = EHRenderer\CMakeFiles\EHRenderer.dir\
   TARGET_PDB = EHRenderer\EHRenderer.pdb
 
+build EHRenderer\CMakeFiles\EHRenderer.dir\DirectX11\Model\SimpleModelClass.cpp.obj: CXX_COMPILER__EHRenderer_unscanned_Release C$:\Temp\EHRenderer\EHRenderer\EHRenderer\DirectX11\Model\SimpleModelClass.cpp || cmake_object_order_depends_target_EHRenderer
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /O2 /Ob2 /DNDEBUG -std:c++20
+  OBJECT_DIR = EHRenderer\CMakeFiles\EHRenderer.dir
+  OBJECT_FILE_DIR = EHRenderer\CMakeFiles\EHRenderer.dir\DirectX11\Model
+  TARGET_COMPILE_PDB = EHRenderer\CMakeFiles\EHRenderer.dir\
+  TARGET_PDB = EHRenderer\EHRenderer.pdb
+
 build EHRenderer\CMakeFiles\EHRenderer.dir\DirectX11\Model\ModelClass.cpp.obj: CXX_COMPILER__EHRenderer_unscanned_Release C$:\Temp\EHRenderer\EHRenderer\EHRenderer\DirectX11\Model\ModelClass.cpp || cmake_object_order_depends_target_EHRenderer
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /O2 /Ob2 /DNDEBUG -std:c++20
   OBJECT_DIR = EHRenderer\CMakeFiles\EHRenderer.dir
@@ -133,6 +140,34 @@ build EHRenderer\CMakeFiles\EHRenderer.dir\DirectX11\Shader\Color\ColorShaderCla
   TARGET_COMPILE_PDB = EHRenderer\CMakeFiles\EHRenderer.dir\
   TARGET_PDB = EHRenderer\EHRenderer.pdb
 
+build EHRenderer\CMakeFiles\EHRenderer.dir\DirectX11\Shader\Texture\TextureshaderClass.cpp.obj: CXX_COMPILER__EHRenderer_unscanned_Release C$:\Temp\EHRenderer\EHRenderer\EHRenderer\DirectX11\Shader\Texture\TextureshaderClass.cpp || cmake_object_order_depends_target_EHRenderer
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /O2 /Ob2 /DNDEBUG -std:c++20
+  OBJECT_DIR = EHRenderer\CMakeFiles\EHRenderer.dir
+  OBJECT_FILE_DIR = EHRenderer\CMakeFiles\EHRenderer.dir\DirectX11\Shader\Texture
+  TARGET_COMPILE_PDB = EHRenderer\CMakeFiles\EHRenderer.dir\
+  TARGET_PDB = EHRenderer\EHRenderer.pdb
+
+build EHRenderer\CMakeFiles\EHRenderer.dir\DirectX11\Shader\Light\LightShaderClass.cpp.obj: CXX_COMPILER__EHRenderer_unscanned_Release C$:\Temp\EHRenderer\EHRenderer\EHRenderer\DirectX11\Shader\Light\LightShaderClass.cpp || cmake_object_order_depends_target_EHRenderer
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /O2 /Ob2 /DNDEBUG -std:c++20
+  OBJECT_DIR = EHRenderer\CMakeFiles\EHRenderer.dir
+  OBJECT_FILE_DIR = EHRenderer\CMakeFiles\EHRenderer.dir\DirectX11\Shader\Light
+  TARGET_COMPILE_PDB = EHRenderer\CMakeFiles\EHRenderer.dir\
+  TARGET_PDB = EHRenderer\EHRenderer.pdb
+
+build EHRenderer\CMakeFiles\EHRenderer.dir\DirectX11\Shader\TextureClass.cpp.obj: CXX_COMPILER__EHRenderer_unscanned_Release C$:\Temp\EHRenderer\EHRenderer\EHRenderer\DirectX11\Shader\TextureClass.cpp || cmake_object_order_depends_target_EHRenderer
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /O2 /Ob2 /DNDEBUG -std:c++20
+  OBJECT_DIR = EHRenderer\CMakeFiles\EHRenderer.dir
+  OBJECT_FILE_DIR = EHRenderer\CMakeFiles\EHRenderer.dir\DirectX11\Shader
+  TARGET_COMPILE_PDB = EHRenderer\CMakeFiles\EHRenderer.dir\
+  TARGET_PDB = EHRenderer\EHRenderer.pdb
+
+build EHRenderer\CMakeFiles\EHRenderer.dir\DirectX11\Shader\LIghtClass.cpp.obj: CXX_COMPILER__EHRenderer_unscanned_Release C$:\Temp\EHRenderer\EHRenderer\EHRenderer\DirectX11\Shader\LIghtClass.cpp || cmake_object_order_depends_target_EHRenderer
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /O2 /Ob2 /DNDEBUG -std:c++20
+  OBJECT_DIR = EHRenderer\CMakeFiles\EHRenderer.dir
+  OBJECT_FILE_DIR = EHRenderer\CMakeFiles\EHRenderer.dir\DirectX11\Shader
+  TARGET_COMPILE_PDB = EHRenderer\CMakeFiles\EHRenderer.dir\
+  TARGET_PDB = EHRenderer\EHRenderer.pdb
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target EHRenderer
@@ -141,7 +176,7 @@ build EHRenderer\CMakeFiles\EHRenderer.dir\DirectX11\Shader\Color\ColorShaderCla
 #############################################
 # Link the executable EHRenderer\EHRenderer.exe
 
-build EHRenderer\EHRenderer.exe: CXX_EXECUTABLE_LINKER__EHRenderer_Release EHRenderer\CMakeFiles\EHRenderer.dir\main.cpp.obj EHRenderer\CMakeFiles\EHRenderer.dir\SystemClass.cpp.obj EHRenderer\CMakeFiles\EHRenderer.dir\InputClass.cpp.obj EHRenderer\CMakeFiles\EHRenderer.dir\ApplicationClass.cpp.obj EHRenderer\CMakeFiles\EHRenderer.dir\DirectX11\D3DClass.cpp.obj EHRenderer\CMakeFiles\EHRenderer.dir\DirectX11\CameraClass.cpp.obj EHRenderer\CMakeFiles\EHRenderer.dir\DirectX11\Model\ModelClass.cpp.obj EHRenderer\CMakeFiles\EHRenderer.dir\DirectX11\Shader\Color\ColorShaderClass.cpp.obj
+build EHRenderer\EHRenderer.exe: CXX_EXECUTABLE_LINKER__EHRenderer_Release EHRenderer\CMakeFiles\EHRenderer.dir\main.cpp.obj EHRenderer\CMakeFiles\EHRenderer.dir\SystemClass.cpp.obj EHRenderer\CMakeFiles\EHRenderer.dir\InputClass.cpp.obj EHRenderer\CMakeFiles\EHRenderer.dir\ApplicationClass.cpp.obj EHRenderer\CMakeFiles\EHRenderer.dir\DirectX11\D3DClass.cpp.obj EHRenderer\CMakeFiles\EHRenderer.dir\DirectX11\CameraClass.cpp.obj EHRenderer\CMakeFiles\EHRenderer.dir\DirectX11\Model\SimpleModelClass.cpp.obj EHRenderer\CMakeFiles\EHRenderer.dir\DirectX11\Model\ModelClass.cpp.obj EHRenderer\CMakeFiles\EHRenderer.dir\DirectX11\Shader\Color\ColorShaderClass.cpp.obj EHRenderer\CMakeFiles\EHRenderer.dir\DirectX11\Shader\Texture\TextureshaderClass.cpp.obj EHRenderer\CMakeFiles\EHRenderer.dir\DirectX11\Shader\Light\LightShaderClass.cpp.obj EHRenderer\CMakeFiles\EHRenderer.dir\DirectX11\Shader\TextureClass.cpp.obj EHRenderer\CMakeFiles\EHRenderer.dir\DirectX11\Shader\LIghtClass.cpp.obj
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /O2 /Ob2 /DNDEBUG
   LINK_FLAGS = /machine:x64 /INCREMENTAL:NO /subsystem:windows
   LINK_LIBRARIES = dxgi.lib  d3d11.lib  d3dcompiler.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
