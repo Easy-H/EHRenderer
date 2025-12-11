@@ -1,6 +1,8 @@
 #include <windows.h>
 #include <memory>
 
+using namespace std;
+
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
 const float SCREEN_DEPTH = 1000.0f;
@@ -10,21 +12,37 @@ class D3DClass;
 class CameraClass;
 class SimpleModelClass;
 class ModelClass;
+class SpriteClass;
 class ColorShaderClass;
 class TextureShaderClass;
 class LightShaderClass;
 class LightClass;
+class FontShaderClass;
+class FontClass;
+class TextClass;
 
 class ApplicationClass {
 private:
 	std::unique_ptr<D3DClass> _direct3D;
 	std::unique_ptr<CameraClass> _camera;
+	
 	std::unique_ptr<ModelClass> _model;
 	std::unique_ptr<SimpleModelClass> _simpleModel;
+
+	std::unique_ptr<SpriteClass> _sprite;
+
 	std::unique_ptr<ColorShaderClass> _colorShader;
 	std::unique_ptr<TextureShaderClass> _textureShader;
 	std::unique_ptr<LightShaderClass> _lightShader;
-	std::unique_ptr<LightClass> _light;
+	
+	std::unique_ptr<FontShaderClass> _fontShader;
+	std::unique_ptr<FontClass> _font;
+	std::unique_ptr<TextClass> _textString1;
+	std::unique_ptr<TextClass> _textString2;
+
+	std::unique_ptr<LightClass[]> _lights;
+	
+	int _numLights;
 
 public:
 	ApplicationClass();

@@ -201,6 +201,52 @@ bool D3DClass::Initialize(int screenWidth, int screenHeight, bool vsync,
 	_worldMatrix = XMMatrixIdentity();
 	_orthoMatrix = XMMatrixOrthographicLH((float) screenWidth, (float) screenHeight, screenNear, screenDepth);
 	
+	D3D11_DEPTH_STENCIL_DESC depthDisabledStencilDesc;
+
+	ZeroMemory(&depthDisabledStencilDesc, sizeof(depthDisabledStencilDesc));
+
+	depthDisabledStencilDesc.DepthEnable = false;
+	depthDisabledStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	depthDisabledStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	depthDisabledStencilDesc.StencilEnable = true;
+	depthDisabledStencilDesc.StencilReadMask = 0xFF;
+	depthDisabledStencilDesc.StencilWriteMask = 0xFF;
+
+	depthDisabledStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	depthDisabledStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+	depthDisabledStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	depthDisabledStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+	depthDisabledStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	depthDisabledStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+	depthDisabledStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	depthDisabledStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+	if (FAILED(_device->CreateDepthStencilState(&depthDisabledStencilDesc,
+		_depthDisabledStencilState.GetAddressOf())))
+		return false;
+
+	D3D11_BLEND_DESC blendStateDesc{};
+
+	ZeroMemory(&blendStateDesc, sizeof(D3D11_BLEND_DESC));
+
+	blendStateDesc.RenderTarget[0].BlendEnable = TRUE;
+	blendStateDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+	blendStateDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+	blendStateDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	blendStateDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	blendStateDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+	blendStateDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	blendStateDesc.RenderTarget[0].RenderTargetWriteMask = 0x0f;
+
+	if (FAILED(_device->CreateBlendState(&blendStateDesc, _alphaEnableBlendingState.GetAddressOf())))
+		return false;
+
+	blendStateDesc.RenderTarget[0].BlendEnable = FALSE;
+
+	if (FAILED(_device->CreateBlendState(&blendStateDesc, _alphaDisableBlendingState.GetAddressOf())))
+		return false;
+
 	return true;
 }
 void D3DClass::Shutdown() {
@@ -269,4 +315,38 @@ void D3DClass::SetBackBufferRenderTarget()
 void D3DClass::ResetViewport()
 {
 	_deviceContext->RSSetViewports(1, &_viewport);
+}
+
+void D3DClass::TurnZBufferOn()
+{
+	_deviceContext->OMSetDepthStencilState(_depthStencilState.Get(), 1);
+}
+
+void D3DClass::TurnZBufferOff()
+{
+	_deviceContext->OMSetDepthStencilState(_depthDisabledStencilState.Get(), 1);
+}
+
+void D3DClass::EnableAlphaBlending()
+{
+	float blendFactor[4]{};
+
+	blendFactor[0] = 0.f;
+	blendFactor[1] = 0.f;
+	blendFactor[2] = 0.f;
+	blendFactor[3] = 0.f;
+
+	_deviceContext->OMSetBlendState(_alphaEnableBlendingState.Get(), blendFactor, 0xffffffff);
+}
+
+void D3DClass::DisableAlphaBlending()
+{
+	float blendFactor[4]{};
+
+	blendFactor[0] = 0.f;
+	blendFactor[1] = 0.f;
+	blendFactor[2] = 0.f;
+	blendFactor[3] = 0.f;
+
+	_deviceContext->OMSetBlendState(_alphaDisableBlendingState.Get(), blendFactor, 0xffffffff);
 }

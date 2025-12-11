@@ -31,6 +31,12 @@ public:
 	void SetBackBufferRenderTarget();
 	void ResetViewport();
 
+	void TurnZBufferOn();
+	void TurnZBufferOff();
+
+	void EnableAlphaBlending();
+	void DisableAlphaBlending();
+
 private:
 	bool _vsync_enabled;
 	int _videoCardMemory;
@@ -42,6 +48,7 @@ private:
 	ComPtr<ID3D11RenderTargetView> _renderTargetView;
 	ComPtr<ID3D11Texture2D> _depthStencilBuffer;
 	ComPtr<ID3D11DepthStencilState> _depthStencilState;
+	ComPtr<ID3D11DepthStencilState> _depthDisabledStencilState;
 	ComPtr<ID3D11DepthStencilView> _depthStencilView;
 	ComPtr<ID3D11RasterizerState> _rasterState;
 
@@ -49,5 +56,8 @@ private:
 	XMMATRIX _worldMatrix;
 	XMMATRIX _orthoMatrix;
 	D3D11_VIEWPORT _viewport;
+
+	ComPtr<ID3D11BlendState> _alphaEnableBlendingState;
+	ComPtr<ID3D11BlendState> _alphaDisableBlendingState;
 
 };
