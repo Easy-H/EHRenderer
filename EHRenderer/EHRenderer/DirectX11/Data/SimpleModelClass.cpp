@@ -1,5 +1,5 @@
 #include "SimpleModelClass.hpp"
-#include "../Shader/TextureClass.hpp"
+#include "TextureClass.hpp"
 
 SimpleModelClass::SimpleModelClass()
 {

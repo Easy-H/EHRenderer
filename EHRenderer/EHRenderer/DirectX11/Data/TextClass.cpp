@@ -1,7 +1,7 @@
 #include "TextClass.hpp"
 
 #include <memory>
-#include "../Font/FontClass.hpp"
+#include "FontClass.hpp"
 
 using namespace std;
 

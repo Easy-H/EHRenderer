@@ -1,7 +1,7 @@
 
 #include "SystemClass.hpp"
 
-#include "inputclass.hpp"
+#include "DirectX11/Inputclass.hpp"
 #include "applicationclass.hpp"
 
 SystemClass::SystemClass()
@@ -25,7 +25,9 @@ bool SystemClass::Initialize()
 	InitializeWindows(screenWidth, screenHeight);
 
 	_input = std::make_unique<InputClass>();
-	_input->Initialize();
+
+	if (!_input->Initialize(_hInstance, _hwnd, screenWidth, screenHeight))
+		return false;
 
 	_application = std::make_unique<ApplicationClass>();
 
@@ -56,8 +58,12 @@ void SystemClass::Run()
 	}
 }
 
+
 LRESULT SystemClass::MessageHandler(HWND hwnd, UINT umsg, WPARAM wparam, LPARAM lparam)
 {
+
+	return DefWindowProc(hwnd, umsg, wparam, lparam);
+	/*
 	switch (umsg) {
 	case WM_KEYDOWN:
 		_input->KeyDown((unsigned int)wparam);
@@ -67,13 +73,13 @@ LRESULT SystemClass::MessageHandler(HWND hwnd, UINT umsg, WPARAM wparam, LPARAM 
 		return 0;
 	default:
 		return DefWindowProc(hwnd, umsg, wparam, lparam);
-	}
+	}*/
 }
 
 bool SystemClass::Frame()
 {
-	if (_input->IsKeyDown(VK_ESCAPE)) return false;
-	return _application->Frame();
+	if (!_input->Frame()) return false;
+	return _application->Frame(*_input);
 }
 
 void SystemClass::InitializeWindows(int& screenWidth, int& screenHeight)

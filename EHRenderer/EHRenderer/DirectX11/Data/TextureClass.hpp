@@ -30,7 +30,6 @@ public:
 
 private:
 	std::unique_ptr<char[]> NewLoadTarga32Bit(char*);
-	bool LoadTarga32Bit(char*);
 
 	ComPtr<ID3D11Texture2D> _texture;
 	ComPtr<ID3D11ShaderResourceView> _textureView;

@@ -15,11 +15,15 @@ class ModelClass;
 class SpriteClass;
 class ColorShaderClass;
 class TextureShaderClass;
+class MultiTextureShaderClass;
+class LightMapShaderClass;
 class LightShaderClass;
 class LightClass;
 class FontShaderClass;
 class FontClass;
 class TextClass;
+class InputClass;
+class TextureClass;
 
 class ApplicationClass {
 private:
@@ -33,16 +37,20 @@ private:
 
 	std::unique_ptr<ColorShaderClass> _colorShader;
 	std::unique_ptr<TextureShaderClass> _textureShader;
+	std::unique_ptr<MultiTextureShaderClass> _multiTextureShader;
+	std::unique_ptr<LightMapShaderClass> _lightMapShader;
 	std::unique_ptr<LightShaderClass> _lightShader;
+
+	std::unique_ptr<TextureClass[]> _textures;
 	
 	std::unique_ptr<FontShaderClass> _fontShader;
 	std::unique_ptr<FontClass> _font;
-	std::unique_ptr<TextClass> _textString1;
-	std::unique_ptr<TextClass> _textString2;
+	std::unique_ptr<TextClass[]> _textStrings;
 
 	std::unique_ptr<LightClass[]> _lights;
 	
 	int _numLights;
+	int _stringCount;
 
 public:
 	ApplicationClass();
@@ -51,8 +59,9 @@ public:
 
 	bool Initialize(int, int, HWND);
 	void Shutdown();
-	bool Frame();
+	bool Frame(InputClass&);
 
 private:
-	bool Render(float);
+	bool Render();
+	bool UpdateMouseStrings(int, int, bool);
 };

@@ -1,5 +1,5 @@
-﻿#include "systemclass.hpp"
-#include <memory>
+﻿#include <memory>
+#include "systemclass.hpp"
 
 int WINAPI WinMain(HINSTANCE hInstance, 
 	HINSTANCE hPrevInstance, PSTR pScmdline, int iCmdshow) {

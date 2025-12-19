@@ -1,5 +1,7 @@
 #include "ColorShaderClass.hpp"
 
+#include <d3dcompiler.h>
+
 ColorShaderClass::ColorShaderClass()
 {
 }
@@ -21,10 +23,6 @@ bool ColorShaderClass::Initialize(ID3D11Device* device, HWND hwnd)
 	if (wcscpy_s(psFilename, 128, L"./HLSL/Color.ps") != 0) return false;
 
 	return InitializeShader(device, hwnd, vsFilename, psFilename);
-}
-
-void ColorShaderClass::Shutdown() {
-	ShutdownShader();
 }
 
 bool ColorShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount,
@@ -117,28 +115,6 @@ bool ColorShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* 
 	}
 
 	return true;
-}
-
-void ColorShaderClass::ShutdownShader()
-{
-}
-
-void ColorShaderClass::OutputShaderErrorMessage(ID3D10Blob* errorMessage, HWND hwnd, WCHAR* shaderFilename)
-{
-
-	char* compileErrors = (char*)(errorMessage->GetBufferPointer());
-	unsigned long long bufferSize = errorMessage->GetBufferSize();
-
-	ofstream fout;
-	fout.open("shader-error.txt");
-
-	for (unsigned long long i = 0; i < bufferSize; i++) {
-		fout << compileErrors[i];
-	}
-
-	fout.close();
-
-	MessageBoxW(hwnd, L"Error compiling shader. Check shader-error.txt for message.", shaderFilename, MB_OK);
 }
 
 bool ColorShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext,

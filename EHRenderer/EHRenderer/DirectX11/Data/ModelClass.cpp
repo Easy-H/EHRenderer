@@ -1,7 +1,5 @@
 #include "ModelClass.hpp"
-
-#include <memory>
-#include "../Shader/TextureClass.hpp"
+#include "TextureClass.hpp"
 
 ModelClass::ModelClass()
 {

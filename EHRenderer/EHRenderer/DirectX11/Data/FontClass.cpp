@@ -1,5 +1,5 @@
 #include "FontClass.hpp"
-#include "../Shader/TextureClass.hpp"
+#include "TextureClass.hpp"
 
 FontClass::FontClass()
 {
