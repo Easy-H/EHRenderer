@@ -16,6 +16,9 @@ class SpriteClass;
 class ColorShaderClass;
 class TextureShaderClass;
 class MultiTextureShaderClass;
+class AlphaMapShaderClass;
+class NormalMapShaderClass;
+class SpecMapShaderClass;
 class LightMapShaderClass;
 class LightShaderClass;
 class LightClass;
@@ -38,6 +41,9 @@ private:
 	std::unique_ptr<ColorShaderClass> _colorShader;
 	std::unique_ptr<TextureShaderClass> _textureShader;
 	std::unique_ptr<MultiTextureShaderClass> _multiTextureShader;
+	std::unique_ptr<AlphaMapShaderClass> _alphaMapShader;
+	std::unique_ptr<NormalMapShaderClass> _normalMapShader;
+	std::unique_ptr<SpecMapShaderClass> _specMapShader;
 	std::unique_ptr<LightMapShaderClass> _lightMapShader;
 	std::unique_ptr<LightShaderClass> _lightShader;
 

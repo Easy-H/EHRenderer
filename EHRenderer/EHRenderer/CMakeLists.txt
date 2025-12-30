@@ -18,7 +18,13 @@ add_executable (EHRenderer WIN32
 	"DirectX11/Data/TextureClass.cpp"
 	"DirectX11/Shader/LIghtClass.cpp" "DirectX11/Data/SpriteClass.cpp" "TimerClass.cpp"
 	
-	"DirectX11/Data/FontClass.cpp" "DirectX11/Data/TextClass.cpp" "DirectX11/Shader/ShaderBase.cpp" "DirectX11/InputClass.cpp" "DirectX11/Shader/MultiTexture/MultiTextureShaderClass.cpp" "DirectX11/Shader/LightMap/LightMapShaderClass.cpp")
+	"DirectX11/Data/FontClass.cpp" "DirectX11/Data/TextClass.cpp"
+	"DirectX11/Shader/ShaderBase.cpp" "DirectX11/InputClass.cpp"
+	"DirectX11/Shader/MultiTexture/MultiTextureShaderClass.cpp"
+	"DirectX11/Shader/LightMap/LightMapShaderClass.cpp"
+	"DirectX11/Shader/AlphaMap/AlphaMapShaderClass.cpp"
+	"DirectX11/Shader/NormalMap/NormalMapShaderClass.cpp"
+	"DirectX11/Shader/SpecMap/SpecMapShaderClass.cpp")
 	
 
 # target_link_libraries (EHRenderer PUBLIC "wrl.lib")

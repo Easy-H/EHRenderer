@@ -4,7 +4,6 @@ const int NUM_LIGHTS = 4;
 
 #include "../ShaderBase.hpp"
 #include <directxmath.h>
-#include <fstream>
 #include <wrl.h>
 
 using namespace DirectX;

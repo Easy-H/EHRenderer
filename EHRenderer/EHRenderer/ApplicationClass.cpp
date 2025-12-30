@@ -13,6 +13,9 @@
 #include "DirectX11/Shader/Color/ColorShaderClass.hpp"
 #include "DirectX11/Shader/Texture/TextureShaderClass.hpp"
 #include "DirectX11/Shader/MultiTexture/MultiTextureShaderClass.hpp"
+#include "DirectX11/Shader/AlphaMap/AlphaMapShaderClass.hpp"
+#include "DirectX11/Shader/NormalMap/NormalMapShaderClass.hpp"
+#include "DirectX11/Shader/SpecMap/SpecMapShaderClass.hpp"
 #include "DirectX11/Shader/LightMap/LightMapShaderClass.hpp"
 #include "DirectX11/Shader/Light/LightShaderClass.hpp"
 #include "DirectX11/Shader/LightClass.hpp"
@@ -43,35 +46,42 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	char modelFilename[128];
 	strcpy_s(modelFilename, "./Assets/cube.txt");
 
-	char textureFilename1[128];
-	strcpy_s(textureFilename1, "./Assets/stone01.tga");
-	char textureFilename2[128];
-	strcpy_s(textureFilename2, "./Assets/dirt01.tga");
-	char textureFilename3[128];
-	strcpy_s(textureFilename3, "./Assets/light01.tga");
+	char textureFilename[5][128];
+	strcpy_s(textureFilename[0], "./Assets/stone02.tga");
+	strcpy_s(textureFilename[1], "./Assets/dirt01.tga");
+	strcpy_s(textureFilename[2], "./Assets/alpha01.tga");
+	strcpy_s(textureFilename[3], "./Assets/normal02.tga");
+	strcpy_s(textureFilename[4], "./Assets/spec02.tga");
 
 	if (!_model->Initialize(_direct3D->GetDevice(), _direct3D->GetDeviceContext(),
-		modelFilename, textureFilename1)) {
+		modelFilename, textureFilename[0])) {
 		MessageBox(hwnd, "Could not Initilalize the model object", "Error", MB_OK);
 		return false;
 	}
 
+	_textures = make_unique<TextureClass[]>(5);
+
+	for (int i = 0; i < 5; i++) {
+		if (!_textures[i].Initialize(_direct3D->GetDevice(),
+			_direct3D->GetDeviceContext(), textureFilename[i])) {
+			MessageBox(hwnd, "Could not Initilalize the model object", "Error", MB_OK);
+			return false;
+		}
+	}
+
 	_sprite = make_unique<SpriteClass>();
 
-	char spriteFilename[128];
-
-	strcpy_s(spriteFilename, "./Assets/stone01.tga");
-
 	if (!_sprite->Initialize(_direct3D->GetDevice(), _direct3D->GetDeviceContext(),
-		screenWidth, screenHeight, spriteFilename, 500, 50))
+		screenWidth, screenHeight, textureFilename[0], 500, 50)) {
+		MessageBox(hwnd, "Could not Initilalize the model object", "Error", MB_OK);
 		return false;
+	}
 
 	_lightShader = std::make_unique<LightShaderClass>();
 	if (!_lightShader->Initialize(_direct3D->GetDevice(), hwnd)) {
 		MessageBox(hwnd, "Could not Initilalize the shader", "Error", MB_OK);
 		return false;
 	}
-
 
 	_numLights = 4;
 
@@ -87,19 +97,22 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	_lights[2].SetPosition(-3.f, 1.f, -3.f);
 
 	_lights[3].SetDiffuseColor(1.0f, 1.f, 1.f, 1.f);
+	_lights[3].SetDirection(0.0f, 0.0f, 1.0f);
+
 	_lights[3].SetPosition(3.f, 1.f, -3.f);
+	_lights[3].SetSpecularColor(1.f, 1.f, 1.f, 1.f);
+	_lights[3].SetSpecularPower(16.0f);
 
 	_textureShader = std::make_unique<TextureShaderClass>();
 	if (!_textureShader->Initialize(_direct3D->GetDevice(), hwnd)) {
 		return false;
 	}
-
+	
 	_lightMapShader = std::make_unique<LightMapShaderClass>();
 
 	if (!_lightMapShader->Initialize(_direct3D->GetDevice(), hwnd)) {
 		return false;
 	}
-
 
 	_fontShader = make_unique<FontShaderClass>();
 	if (!_fontShader->Initialize(_direct3D->GetDevice(), hwnd)) {
@@ -118,21 +131,24 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	if (!_multiTextureShader->Initialize(_direct3D->GetDevice(), hwnd)) {
 		return false;
 	}
+	
+	_alphaMapShader = std::make_unique<AlphaMapShaderClass>();
 
-
-	_textures = make_unique<TextureClass[]>(3);
-
-	if (!_textures[0].Initialize(_direct3D->GetDevice(), _direct3D->GetDeviceContext(),
-		textureFilename1))
+	if (!_alphaMapShader->Initialize(_direct3D->GetDevice(), hwnd)) {
 		return false;
+	}
 
-	if (!_textures[1].Initialize(_direct3D->GetDevice(), _direct3D->GetDeviceContext(),
-		textureFilename2))
-		return false;
+	_normalMapShader = std::make_unique<NormalMapShaderClass>();
 
-	if (!_textures[2].Initialize(_direct3D->GetDevice(), _direct3D->GetDeviceContext(),
-		textureFilename3))
+	if (!_normalMapShader->Initialize(_direct3D->GetDevice(), hwnd)) {
 		return false;
+	}
+
+	_specMapShader = std::make_unique<SpecMapShaderClass>();
+
+	if (!_specMapShader->Initialize(_direct3D->GetDevice(), hwnd)) {
+		return false;
+	}
 
 	_stringCount = 3;
 
@@ -206,15 +222,52 @@ bool ApplicationClass::Render()
 	_direct3D->GetProjectionMatrix(projectionMatrix);
 	_direct3D->GetOrthoMatrix(orthoMatrix);
 
-	
 	_model->Render(_direct3D->GetDeviceContext());
+
+	if (!_specMapShader->Render(_direct3D->GetDeviceContext(), _model->GetIndexCount(),
+		worldMatrix, viewMatrix, projectionMatrix,
+		_textures[0].GetTexture(), _textures[3].GetTexture(), _textures[4].GetTexture(),
+		_lights[3].GetDirection(), _lights[3].GetDiffuseColor(),
+		_camera->GetPosition(), _lights[3].GetSpecularColor(), _lights[3].GetSpecularPower())) {
+		return false;
+	}
+
+	/*
+
+	if (!_normalMapShader->Render(_direct3D->GetDeviceContext(), _model->GetIndexCount(),
+		worldMatrix, viewMatrix, projectionMatrix,
+		_textures[0].GetTexture(), _textures[3].GetTexture(),
+		_lights[3].GetDirection(), _lights[3].GetDiffuseColor())) {
+		return false;
+	}
+
+	/*
+
+	XMFLOAT4 diffuseColor[4]{}, lightPosition[4]{};
+
+	for (int i = 0; i < _numLights; i++) {
+		diffuseColor[i] = _lights[i].GetDiffuseColor();
+		lightPosition[i] = _lights[i].GetPosition();
+	}
+	if (!_lightShader->Render(
+		_direct3D->GetDeviceContext(), _model->GetIndexCount(),
+		worldMatrix, viewMatrix, projectionMatrix, _textures[1].GetTexture(),
+		diffuseColor, lightPosition)) {
+		return false;
+	}
+	/*
 
 	if (!_lightMapShader->Render(_direct3D->GetDeviceContext(), _model->GetIndexCount(),
 		worldMatrix, viewMatrix, projectionMatrix,
 		_textures[0].GetTexture(), _textures[2].GetTexture())) {
 		return false;
 	}
-
+	/*
+	if (!_alphaMapShader->Render(_direct3D->GetDeviceContext(), _model->GetIndexCount(),
+		worldMatrix, viewMatrix, projectionMatrix,
+		_textures[0].GetTexture(), _textures[1].GetTexture(), _textures[2].GetTexture())) {
+		return false;
+	}
 	/*
 	if(!_multiTextureShader->Render(_direct3D->GetDeviceContext(), _model->GetIndexCount(),
 		worldMatrix, viewMatrix, projectionMatrix,
@@ -222,19 +275,7 @@ bool ApplicationClass::Render()
 		return false;
 */
 	/*
-	XMFLOAT4 diffuseColor[4]{}, lightPosition[4]{};
-
-	for (int i = 0; i < _numLights; i++) {
-		diffuseColor[i] = _lights[i].GetDiffuseColor();
-		lightPosition[i] = _lights[i].GetPosition();
-	}
-
-	if (!_lightShader->Render(
-		_direct3D->GetDeviceContext(), _model->GetIndexCount(),
-		worldMatrix, viewMatrix, projectionMatrix, _texture2->GetTexture(),
-		diffuseColor, lightPosition)) {
-		return false;
-	}/**/
+	*/
 
 	_direct3D->TurnZBufferOff();
 

@@ -1,5 +1,6 @@
 #include "LightShaderClass.hpp"
 #include <d3dcompiler.h>
+#include <fstream>
 
 LightShaderClass::LightShaderClass()
 {
