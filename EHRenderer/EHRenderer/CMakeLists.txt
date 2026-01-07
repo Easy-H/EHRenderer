@@ -24,7 +24,7 @@ add_executable (EHRenderer WIN32
 	"DirectX11/Shader/LightMap/LightMapShaderClass.cpp"
 	"DirectX11/Shader/AlphaMap/AlphaMapShaderClass.cpp"
 	"DirectX11/Shader/NormalMap/NormalMapShaderClass.cpp"
-	"DirectX11/Shader/SpecMap/SpecMapShaderClass.cpp")
+	"DirectX11/Shader/SpecMap/SpecMapShaderClass.cpp" "DirectX11/ShaderManager.cpp" "DirectX11/FrustumClass.cpp" "DirectX11/ModelListClass.cpp" "DirectX11/PositionClass.cpp" "DirectX11/RenderTextureClass.cpp" "DirectX11/DisplayPlaneClass.cpp" "DirectX11/Shader/Fog/FogShaderClass.cpp")
 	
 
 # target_link_libraries (EHRenderer PUBLIC "wrl.lib")

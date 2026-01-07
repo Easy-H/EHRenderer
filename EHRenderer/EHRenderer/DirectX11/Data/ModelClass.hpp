@@ -41,7 +41,7 @@ public:
 	~ModelClass();
 
 	bool Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext,
-		char* modelFilename, char* textureFilename);
+		char* modelFilename);
 	void Shutdown();
 	void Render(ID3D11DeviceContext*);
 
@@ -53,9 +53,6 @@ private:
 	bool InitializeBuffers(ID3D11Device*);
 	void ShutdownBuffers();
 	void RenderBuffers(ID3D11DeviceContext*);
-
-	bool LoadTexture(ID3D11Device*, ID3D11DeviceContext*, char*);
-	void ReleaseTexture();
 
 	bool LoadModel(char*);
 	void ReleaseModel();

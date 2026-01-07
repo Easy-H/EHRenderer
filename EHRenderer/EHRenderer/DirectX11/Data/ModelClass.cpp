@@ -17,19 +17,16 @@ ModelClass::~ModelClass()
 }
 
 bool ModelClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext,
-	char* modelFilename, char* textureFilename)
+	char* modelFilename)
 {
 	if (!LoadModel(modelFilename)) return false;
 
 	CalculateModelVectors();
 
-	if (!InitializeBuffers(device)) return false;
-
-	return LoadTexture(device, deviceContext, textureFilename);
+	return InitializeBuffers(device);
 }
 
 void ModelClass::Shutdown() {
-	ReleaseTexture();
 	ShutdownBuffers();
 }
 
@@ -123,20 +120,6 @@ void ModelClass::RenderBuffers(ID3D11DeviceContext* deviceContext)
 
 ID3D11ShaderResourceView* ModelClass::GetTexture() {
 	return _texture->GetTexture();
-}
-
-bool ModelClass::LoadTexture(ID3D11Device* device,
-	ID3D11DeviceContext* deviceContext, char* filename)
-{
-	_texture = std::make_unique<TextureClass>();
-	if (!_texture->Initialize(device, deviceContext, filename)) {
-		return false;
-	}
-	return true;
-}
-
-void ModelClass::ReleaseTexture()
-{
 }
 
 bool ModelClass::LoadModel(char* filename)
