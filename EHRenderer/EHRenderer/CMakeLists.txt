@@ -12,6 +12,7 @@ add_executable (EHRenderer WIN32
 	
 	"DirectX11/Shader/Color/ColorShaderClass.cpp"
 	"DirectX11/Shader/Texture/TextureShaderClass.cpp"
+	"DirectX11/Shader/Translate/TranslateShaderClass.cpp"
 	"DirectX11/Shader/Light/LightShaderClass.cpp"
 	"DirectX11/Shader/Font/FontShaderClass.cpp"
 	
@@ -24,7 +25,18 @@ add_executable (EHRenderer WIN32
 	"DirectX11/Shader/LightMap/LightMapShaderClass.cpp"
 	"DirectX11/Shader/AlphaMap/AlphaMapShaderClass.cpp"
 	"DirectX11/Shader/NormalMap/NormalMapShaderClass.cpp"
-	"DirectX11/Shader/SpecMap/SpecMapShaderClass.cpp" "DirectX11/ShaderManager.cpp" "DirectX11/FrustumClass.cpp" "DirectX11/ModelListClass.cpp" "DirectX11/PositionClass.cpp" "DirectX11/RenderTextureClass.cpp" "DirectX11/DisplayPlaneClass.cpp" "DirectX11/Shader/Fog/FogShaderClass.cpp")
+	"DirectX11/Shader/SpecMap/SpecMapShaderClass.cpp"
+	"DirectX11/ShaderManager.cpp"
+	"DirectX11/FrustumClass.cpp"
+	"DirectX11/ModelListClass.cpp"
+	"DirectX11/PositionClass.cpp"
+	"DirectX11/RenderTextureClass.cpp"
+	"DirectX11/DisplayPlaneClass.cpp" 
+	"DirectX11/Shader/Fog/FogShaderClass.cpp"
+	"DirectX11/Shader/ClipPlane/ClipPlaneShaderClass.cpp"
+	"DirectX11/Shader/Translate/TranslateShaderClass.cpp"
+	"DirectX11/Shader/Transparent/TransparentShaderClass.cpp"
+	"DirectX11/Shader/Reflection/ReflectionShaderClass.cpp")
 	
 
 # target_link_libraries (EHRenderer PUBLIC "wrl.lib")

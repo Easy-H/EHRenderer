@@ -23,6 +23,10 @@ class LightMapShaderClass;
 class LightShaderClass;
 class FontShaderClass;
 class FogShaderClass;
+class ClipPlaneShaderClass;
+class TranslateShaderClass;
+class TransparentShaderClass;
+class ReflectionShaderClass;
 
 class LightClass;
 class FontClass;
@@ -45,7 +49,7 @@ private:
 	std::unique_ptr<D3DClass> _direct3D;
 	std::unique_ptr<CameraClass> _camera;
 	
-	std::unique_ptr<ModelClass> _model;
+	std::unique_ptr<ModelClass[]> _models;
 	std::unique_ptr<SimpleModelClass> _simpleModel;
 
 	std::unique_ptr<SpriteClass> _sprite;
@@ -57,6 +61,10 @@ private:
 	std::unique_ptr<LightMapShaderClass> _lightMapShader;
 	std::unique_ptr<LightShaderClass> _lightShader;
 	std::unique_ptr<FogShaderClass> _fogShader;
+	std::unique_ptr<ClipPlaneShaderClass> _clipPlaneShader;
+	std::unique_ptr<TranslateShaderClass> _translateShader;
+	std::unique_ptr<TransparentShaderClass> _transparentShader;
+	std::unique_ptr<ReflectionShaderClass> _reflectionShader;
 
 	std::unique_ptr<TextureClass[]> _textures;
 	
@@ -94,6 +102,7 @@ public:
 
 private:
 	bool Render();
+	bool RenderReflectionToTexture(float);
 	bool RenderSceneToTexture();
 
 	bool UpdateMouseStrings(int, int, bool);
