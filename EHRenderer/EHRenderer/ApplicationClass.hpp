@@ -27,6 +27,8 @@ class ClipPlaneShaderClass;
 class TranslateShaderClass;
 class TransparentShaderClass;
 class ReflectionShaderClass;
+class WaterShaderClass;
+class RefractionShaderClass;
 
 class LightClass;
 class FontClass;
@@ -65,6 +67,8 @@ private:
 	std::unique_ptr<TranslateShaderClass> _translateShader;
 	std::unique_ptr<TransparentShaderClass> _transparentShader;
 	std::unique_ptr<ReflectionShaderClass> _reflectionShader;
+	std::unique_ptr<WaterShaderClass> _waterShader;
+	std::unique_ptr<RefractionShaderClass> _refractionShader;
 
 	std::unique_ptr<TextureClass[]> _textures;
 	
@@ -83,11 +87,14 @@ private:
 	std::unique_ptr<ModelListClass> _modelList;
 
 
-	std::unique_ptr<RenderTextureClass> _renderTexture;
+	std::unique_ptr<RenderTextureClass[]> _renderTextures;
 	std::unique_ptr<DisplayPlaneClass> _displayPlane;
 	
 	int _numLights;
 	int _stringCount;
+
+	float _waterHeight;
+	float _waterTranslation;
 
 	XMMATRIX _baseViewMatrix;
 
@@ -102,7 +109,8 @@ public:
 
 private:
 	bool Render();
-	bool RenderReflectionToTexture(float);
+	bool RenderRefractionToTexture();
+	bool RenderReflectionToTexture();
 	bool RenderSceneToTexture();
 
 	bool UpdateMouseStrings(int, int, bool);
