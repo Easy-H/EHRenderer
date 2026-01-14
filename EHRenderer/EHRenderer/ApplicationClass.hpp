@@ -29,6 +29,10 @@ class TransparentShaderClass;
 class ReflectionShaderClass;
 class WaterShaderClass;
 class RefractionShaderClass;
+class GlassShaderClass;
+class FireShaderClass;
+class DepthShaderClass;
+class BlurShaderClass;
 
 class LightClass;
 class FontClass;
@@ -69,6 +73,10 @@ private:
 	std::unique_ptr<ReflectionShaderClass> _reflectionShader;
 	std::unique_ptr<WaterShaderClass> _waterShader;
 	std::unique_ptr<RefractionShaderClass> _refractionShader;
+	std::unique_ptr<GlassShaderClass> _glassShader;
+	std::unique_ptr<FireShaderClass> _fireShader;
+	std::unique_ptr<DepthShaderClass> _depthShader;
+	std::unique_ptr<BlurShaderClass> _blurShader;
 
 	std::unique_ptr<TextureClass[]> _textures;
 	

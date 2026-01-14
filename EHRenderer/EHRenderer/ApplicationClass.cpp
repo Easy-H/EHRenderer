@@ -30,6 +30,10 @@
 #include "DirectX11/Shader/Reflection/ReflectionShaderClass.hpp"
 #include "DirectX11/Shader/Water/WaterShaderClass.hpp"
 #include "DirectX11/Shader/Refraction/RefractionShaderClass.hpp"
+#include "DirectX11/Shader/Glass/GlassShaderClass.hpp"
+#include "DirectX11/Shader/Fire/FireShaderClass.hpp"
+#include "DirectX11/Shader/Depth/DepthShaderClass.hpp"
+#include "DirectX11/Shader/Blur/BlurShaderClass.hpp"
 
 #include "DirectX11/FrustumClass.hpp"
 #include "DirectX11/PositionClass.hpp"
@@ -56,20 +60,18 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	_direct3D->Initialize(screenWidth, screenHeight, VSYNC_ENABLED, hwnd, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR);
 	
 	_camera = std::make_unique<CameraClass>();
-	_camera->SetPosition(-10.f, 6.f, -10.f);
-	_camera->SetRotation(0.f, 45.f, 0.f);
+	_camera->SetPosition(0.f, 2.f, -10.f);
+
 	_camera->Render();
 	_camera->GetViewMatrix(_baseViewMatrix);
 
 	_models = std::make_unique<ModelClass[]>(4);
 
-	char modelFilename[4][128]{};
-	strcpy_s(modelFilename[0], "./Assets/ground.txt");
-	strcpy_s(modelFilename[1], "./Assets/wall.txt");
-	strcpy_s(modelFilename[2], "./Assets/bath.txt");
-	strcpy_s(modelFilename[3], "./Assets/water.txt");
+	char modelFilename[2][128]{};
+	strcpy_s(modelFilename[0], "./Assets/floor.txt");
+	strcpy_s(modelFilename[1], "./Assets/square.txt");
 
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 2; i++) {
 		if (!_models[i].Initialize(_direct3D->GetDevice(),
 			_direct3D->GetDeviceContext(), modelFilename[i])) {
 			MessageBox(hwnd, "Could not Initilalize the model object", modelFilename[i], MB_OK);
@@ -77,16 +79,14 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		}
 	}
 
-	_textures = make_unique<TextureClass[]>(5);
+	_textures = make_unique<TextureClass[]>(3);
 	
-	char textureFilename[5][128]{};
-	strcpy_s(textureFilename[0], "./Assets/ground01.tga");
-	strcpy_s(textureFilename[1], "./Assets/wall01.tga");
-	strcpy_s(textureFilename[2], "./Assets/marble01.tga");
-	strcpy_s(textureFilename[3], "./Assets/water01.tga");
-	strcpy_s(textureFilename[4], "./Assets/spec02.tga");
+	char textureFilename[3][128]{};
+	strcpy_s(textureFilename[0], "./Assets/grid01.tga");
+	strcpy_s(textureFilename[1], "./Assets/stone01.tga");
+	strcpy_s(textureFilename[2], "./Assets/alpha02.tga");
 
-	for (int i = 0; i < 5; i++) {
+	for (int i = 0; i < 3; i++) {
 		if (!_textures[i].Initialize(_direct3D->GetDevice(),
 			_direct3D->GetDeviceContext(), textureFilename[i])) {
 			MessageBox(hwnd, "Could not Initilalize the model object", textureFilename[i], MB_OK);
@@ -183,6 +183,30 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
+	_glassShader = make_unique<GlassShaderClass>();
+
+	if (!_glassShader->Initialize(_direct3D->GetDevice(), hwnd)) {
+		return false;
+	}
+
+	_fireShader = make_unique<FireShaderClass>();
+
+	if (!_fireShader->Initialize(_direct3D->GetDevice(), hwnd)) {
+		return false;
+	}
+
+	_depthShader = make_unique<DepthShaderClass>();
+
+	if (!_depthShader->Initialize(_direct3D->GetDevice(), hwnd)) {
+		return false;
+	}
+
+	_blurShader = make_unique<BlurShaderClass>();
+
+	if (!_depthShader->Initialize(_direct3D->GetDevice(), hwnd)) {
+		return false;
+	}
+
 	_stringCount = 3;
 
 	char testString1[32];
@@ -221,6 +245,8 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	if (!_timer->Initialize()) return false;
 
 	_position = make_unique<PositionClass>();
+
+	_position->SetPosition(0.f, 2.f, -10.f);
 	_frustum = make_unique<FrustumClass>();
 
 	/*
@@ -262,9 +288,18 @@ bool ApplicationClass::Frame(InputClass& input)
 	if (input.IsEscapePressed()) return false;
 
 	_timer->Frame();
+
 	_position->SetFrameTime(_timer->GetTime());
-	_position->TurnLeft(input.IsLeftArrowPressed());
-	_position->TurnRight(input.IsRightArrowPressed());
+
+	_position->MoveLeft(input.IsLeftArrowPressed());
+	_position->MoveRight(input.IsRightArrowPressed());
+
+	float x, y, z;
+
+	_position->GetPosition(x, y, z);
+
+	_camera->SetPosition(x, y, z);
+	_camera->Render();
 
 	_waterTranslation += 0.001f;
 	if (_waterTranslation > 1.0f)
@@ -278,15 +313,11 @@ bool ApplicationClass::Frame(InputClass& input)
 
 	/*
 	if (!UpdateMouseStrings(mouseX, mouseY, mouseDown)) return false;
+
+	if (!RenderSceneToTexture()) {
+		return false;
+	}
 	/**/
-
-	if (!RenderRefractionToTexture()) {
-		return false;
-	}
-
-	if (!RenderReflectionToTexture()) {
-		return false;
-	}
 
 	return Render();
 }
@@ -308,15 +339,30 @@ bool ApplicationClass::Render()
 	_direct3D->GetProjectionMatrix(projectionMatrix);
 	_direct3D->GetOrthoMatrix(orthoMatrix);
 
-	_direct3D->EnableAlphaBlending();
 	_models[0].Render(_direct3D->GetDeviceContext());
 
-	if (!_shaderManager->RenderTextureShader(_direct3D->GetDeviceContext(), _models[0].GetIndexCount(),
-		worldMatrix, viewMatrix, projectionMatrix, _textures[0].GetTexture())) {
+	if (!_depthShader->Render(_direct3D->GetDeviceContext(),
+		_models[0].GetIndexCount(),
+		worldMatrix, viewMatrix, projectionMatrix)) {
 		return false;
 	}
 
-	worldMatrix = XMMatrixTranslation(0.f, 6.f, 8.f);
+	/*
+	XMFLOAT3 cameraPosition = _camera->GetPosition();
+	XMFLOAT3 modelPosition = XMFLOAT3(0.f, 1.5f, 0.f);
+
+	float pi = 3.14159265358979323846f;
+	float angle = atan2(modelPosition.x - cameraPosition.x,
+		modelPosition.y - cameraPosition.z) * (180.f / pi);
+
+	float rotation = (float)angle * 0.0174532925f;
+
+	worldMatrix = XMMatrixRotationY(rotation);
+
+	XMMATRIX translateMatrix = XMMatrixTranslation(
+		modelPosition.x, modelPosition.y, modelPosition.z);
+
+	worldMatrix = XMMatrixMultiply(worldMatrix, translateMatrix);
 
 	_models[1].Render(_direct3D->GetDeviceContext());
 
@@ -324,57 +370,66 @@ bool ApplicationClass::Render()
 		worldMatrix, viewMatrix, projectionMatrix, _textures[1].GetTexture())) {
 		return false;
 	}
-	
-	_direct3D->GetWorldMatrix(worldMatrix);
-	worldMatrix = XMMatrixTranslation(0.f, 2.f, 0.f);
-
-	_models[2].Render(_direct3D->GetDeviceContext());
-
-	if (!_shaderManager->RenderTextureShader(_direct3D->GetDeviceContext(), _models[2].GetIndexCount(),
-		worldMatrix, viewMatrix, projectionMatrix, _textures[2].GetTexture())) {
-		return false;
-	}
-
-
-	XMMATRIX reflectionViewMatrix;
-	_camera->GetReflectionViewMatrix(reflectionViewMatrix);
-
-	_models[3].Render(_direct3D->GetDeviceContext());
+	*/
 
 	/*
-	if (!_reflectionShader->Render(_direct3D->GetDeviceContext(), _models[1].GetIndexCount(),
-		worldMatrix, viewMatrix, projectionMatrix, _textures[1].GetTexture(),
-		_renderTextures[1].GetShaderResourceView(), reflectionViewMatrix)) {
-		return false;
-	}*/
-	
-	if (!_waterShader->Render(_direct3D->GetDeviceContext(), _models[3].GetIndexCount(),
-		worldMatrix, viewMatrix, projectionMatrix, reflectionViewMatrix,
-		_renderTextures[1].GetShaderResourceView(), _renderTextures[0].GetShaderResourceView(),
-		_textures[3].GetTexture(), _waterTranslation, 0.01f)) {
-		return false;
+	static float frameTime = 0.f;
+	frameTime += 0.01f;
+
+	if (frameTime > 1000.f) {
+		frameTime -= 1000.f;
 	}
 
-	_direct3D->DisableAlphaBlending();
+	XMFLOAT3 scrollSpeeds = XMFLOAT3(1.3f, 2.1f, 2.3f);
+	XMFLOAT3 scales = XMFLOAT3(1.f, 2.f, 3.f);
 
-	_direct3D->TurnZBufferOff();
+	XMFLOAT2 distortion1 = XMFLOAT2(0.1f, 0.2f);
+	XMFLOAT2 distortion2 = XMFLOAT2(0.1f, 0.3f);
+	XMFLOAT2 distortion3 = XMFLOAT2(0.1f, 0.1f);
 
-	if (!_sprite->Render(_direct3D->GetDeviceContext())) return false;
+	float distortionScale = 0.8f;
+	float distortionBias = 0.5f;
 
 	_direct3D->EnableAlphaBlending();
 
-	_direct3D->GetWorldMatrix(worldMatrix);
+	_models[0].Render(_direct3D->GetDeviceContext());
 
-	for (int i = 0; i < _stringCount; i++) {
-		_textStrings[i].Render(_direct3D->GetDeviceContext());
-		if (!_fontShader->Render(_direct3D->GetDeviceContext(), _textStrings[i].GetIndexCount(),
-			worldMatrix, _baseViewMatrix, orthoMatrix, _font->GetTexture(), _textStrings[i].GetPixelColor()))
-			return false;
+	if (!_fireShader->Render(_direct3D->GetDeviceContext(), _models[0].GetIndexCount(),
+		worldMatrix, viewMatrix, projectionMatrix,
+		_textures[0].GetTexture(), _textures[1].GetTexture(), _textures[2].GetTexture(),
+		frameTime, scrollSpeeds, scales, distortion1, distortion2, distortion3, distortionScale, distortionBias)) {
+		return false;
 	}
 
-	_direct3D->TurnZBufferOn();
-	_direct3D->DisableAlphaBlending();
+	_direct3D->DisableAlphaBlending();*/
+
 	_direct3D->EndScene();
+
+	return true;
+}
+
+bool ApplicationClass::RenderSceneToTexture()
+{
+	_renderTextures[0].SetRenderTarget(_direct3D->GetDeviceContext());
+	_renderTextures[0].ClearRenderTarget(_direct3D->GetDeviceContext(), 0.f, 0.f, 0.f, 1.f);
+
+	_camera->Render();
+
+	XMMATRIX worldMatrix, viewMatrix, projectionMatrix;
+
+	_direct3D->GetWorldMatrix(worldMatrix);
+	_camera->GetViewMatrix(viewMatrix);
+	_direct3D->GetProjectionMatrix(projectionMatrix);
+
+	_models[0].Render(_direct3D->GetDeviceContext());
+
+	if (!_shaderManager->RenderTextureShader(_direct3D->GetDeviceContext(), _models[0].GetIndexCount(),
+		worldMatrix, viewMatrix, projectionMatrix, _textures[0].GetTexture())) {
+		return false;
+	}
+
+	_direct3D->SetBackBufferRenderTarget();
+	_direct3D->ResetViewport();
 
 	return true;
 }
@@ -429,33 +484,6 @@ bool ApplicationClass::RenderReflectionToTexture()
 
 	if (!_shaderManager->RenderTextureShader(_direct3D->GetDeviceContext(), _models[1].GetIndexCount(),
 		worldMatrix, reflectionViewMatrix, projectionMatrix, _textures[1].GetTexture())) {
-		return false;
-	}
-
-	_direct3D->SetBackBufferRenderTarget();
-	_direct3D->ResetViewport();
-
-	return true;
-}
-
-bool ApplicationClass::RenderSceneToTexture()
-{
-	_renderTextures[0].SetRenderTarget(_direct3D->GetDeviceContext());
-	_renderTextures[0].ClearRenderTarget(_direct3D->GetDeviceContext(), 0.f, 0.5f, 1.f, 1.f);
-
-	_camera->SetPosition(0.f, 0.f, -5.f);
-	_camera->Render();
-
-	XMMATRIX worldMatrix, viewMatrix, projectionMatrix;
-
-	_direct3D->GetWorldMatrix(worldMatrix);
-	_camera->GetViewMatrix(viewMatrix);
-	_renderTextures[1].GetProjectionMatrix(projectionMatrix);
-
-	_models[0].Render(_direct3D->GetDeviceContext());
-
-	if (!_shaderManager->RenderTextureShader(_direct3D->GetDeviceContext(), _models[1].GetIndexCount(),
-		worldMatrix, viewMatrix, projectionMatrix, _textures[1].GetTexture())) {
 		return false;
 	}
 
