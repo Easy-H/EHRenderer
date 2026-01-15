@@ -1,11 +1,15 @@
 #pragma once
+
 #include "BlurShaderClass.hpp"
+#include <memory>
 
 class D3DClass;
 class CameraClass;
 class RenderTextureClass;
 class TextureShaderClass;
 class OrthoWindowClass;
+
+using namespace std;
 
 class BlurClass {
 public:
@@ -19,9 +23,11 @@ public:
 	bool BlurTexture(D3DClass*, CameraClass*, RenderTextureClass*, TextureShaderClass*, BlurShaderClass*);
 
 private:
-	RenderTextureClass* _downSampleTexure1;
-	RenderTextureClass* _downSampleTexure2;
-	OrthoWindowClass* _downSampleWindow;
-	OrthoWindowClass* _upSampleWindow;
+	unique_ptr<RenderTextureClass> _downSampleTexture1;
+	unique_ptr<RenderTextureClass> _downSampleTexture2;
+
+	unique_ptr<OrthoWindowClass> _downSampleWindow;
+	unique_ptr<OrthoWindowClass> _upSampleWindow;
+
 	int _downSampleWidth, _downSampleHeight;
 };

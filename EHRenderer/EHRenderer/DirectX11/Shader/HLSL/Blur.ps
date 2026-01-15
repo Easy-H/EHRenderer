@@ -24,7 +24,7 @@ float4 BlurPixelShader(PixelInputType input) : SV_TARGET {
 	if (blurType < 0.1f) {
 		texelSize = 1.f / screenWidth;
 
-		texCoord1 = input.tex + float2(texelSize * -.4f, 0.f);
+		texCoord1 = input.tex + float2(texelSize * -4.f, 0.f);
 		texCoord2 = input.tex + float2(texelSize * -3.f, 0.f);
 		texCoord3 = input.tex + float2(texelSize * -2.f, 0.f);
 		texCoord4 = input.tex + float2(texelSize * -1.f, 0.f);
@@ -37,7 +37,7 @@ float4 BlurPixelShader(PixelInputType input) : SV_TARGET {
 	else {
 		texelSize = 1.f / screenHeight;
 
-		texCoord1 = input.tex + float2(0.f, texelSize * -.4f);
+		texCoord1 = input.tex + float2(0.f, texelSize * -4.f);
 		texCoord2 = input.tex + float2(0.f, texelSize * -3.f);
 		texCoord3 = input.tex + float2(0.f, texelSize * -2.f);
 		texCoord4 = input.tex + float2(0.f, texelSize * -1.f);

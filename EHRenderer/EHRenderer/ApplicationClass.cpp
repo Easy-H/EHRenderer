@@ -35,6 +35,9 @@
 #include "DirectX11/Shader/Depth/DepthShaderClass.hpp"
 #include "DirectX11/Shader/Blur/BlurShaderClass.hpp"
 
+#include "DirectX11/OrthoWindowClass.hpp"
+#include "DirectX11/Shader/Blur/BlurClass.hpp"
+
 #include "DirectX11/FrustumClass.hpp"
 #include "DirectX11/PositionClass.hpp"
 #include "DirectX11/ModelListClass.hpp"
@@ -60,7 +63,7 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	_direct3D->Initialize(screenWidth, screenHeight, VSYNC_ENABLED, hwnd, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR);
 	
 	_camera = std::make_unique<CameraClass>();
-	_camera->SetPosition(0.f, 2.f, -10.f);
+	_camera->SetPosition(0.f, 0.f, -10.f);
 
 	_camera->Render();
 	_camera->GetViewMatrix(_baseViewMatrix);
@@ -68,7 +71,7 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	_models = std::make_unique<ModelClass[]>(4);
 
 	char modelFilename[2][128]{};
-	strcpy_s(modelFilename[0], "./Assets/floor.txt");
+	strcpy_s(modelFilename[0], "./Assets/cube.txt");
 	strcpy_s(modelFilename[1], "./Assets/square.txt");
 
 	for (int i = 0; i < 2; i++) {
@@ -82,8 +85,8 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	_textures = make_unique<TextureClass[]>(3);
 	
 	char textureFilename[3][128]{};
-	strcpy_s(textureFilename[0], "./Assets/grid01.tga");
-	strcpy_s(textureFilename[1], "./Assets/stone01.tga");
+	strcpy_s(textureFilename[0], "./Assets/stone01.tga");
+	strcpy_s(textureFilename[1], "./Assets/grid01.tga");
 	strcpy_s(textureFilename[2], "./Assets/alpha02.tga");
 
 	for (int i = 0; i < 3; i++) {
@@ -137,6 +140,12 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	_shaderManager = make_unique<ShaderManagerClass>();
 
 	if (!_shaderManager->Initialize(_direct3D->GetDevice(), hwnd)) {
+		return false;
+	}
+
+	_textureShader = make_unique<TextureShaderClass>();
+
+	if (!_textureShader->Initialize(_direct3D->GetDevice(), hwnd)) {
 		return false;
 	}
 
@@ -201,12 +210,6 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
-	_blurShader = make_unique<BlurShaderClass>();
-
-	if (!_depthShader->Initialize(_direct3D->GetDevice(), hwnd)) {
-		return false;
-	}
-
 	_stringCount = 3;
 
 	char testString1[32];
@@ -246,16 +249,8 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	_position = make_unique<PositionClass>();
 
-	_position->SetPosition(0.f, 2.f, -10.f);
+	_position->SetPosition(0.f, 0.f, -10.f);
 	_frustum = make_unique<FrustumClass>();
-
-	/*
-	/*
-	_colorShader = std::make_unique<ColorShaderClass>();
-	if (!_colorShader->Initialize(_direct3D->GetDevice(), hwnd)) {
-		MessageBox(hwnd, "Could not Initilalize the color shader object", "Error", MB_OK);
-		return false;
-	}*/
 
 	_renderTextures = make_unique<RenderTextureClass[]>(2);
 
@@ -270,6 +265,28 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	_displayPlane = make_unique<DisplayPlaneClass>();
 
 	if (!_displayPlane->Initialize(_direct3D->GetDevice(), 1.f, 1.f)) {
+		return false;
+	}
+
+	_fullScreenWindow = make_unique<OrthoWindowClass>();
+
+	if (!_fullScreenWindow->Initialize(_direct3D->GetDevice(), screenWidth, screenHeight))
+	{
+		return false;
+	}
+
+	_blur = make_unique<BlurClass>();
+
+	int downSampleWidth = screenWidth / 2;
+	int downSampleHeight = screenHeight / 2;
+
+	if (!_blur->Initialize(_direct3D.get(), downSampleWidth, downSampleHeight, SCREEN_NEAR, SCREEN_DEPTH, screenWidth, screenHeight)) {
+		return false;
+	}
+
+	_blurShader = make_unique<BlurShaderClass>();
+
+	if (!_blurShader->Initialize(_direct3D->GetDevice(), hwnd)) {
 		return false;
 	}
 
@@ -311,14 +328,20 @@ bool ApplicationClass::Frame(InputClass& input)
 	input.GetMouseLocation(mouseX, mouseY);
 	bool mouseDown = input.IsMousePressed();
 
-	/*
-	if (!UpdateMouseStrings(mouseX, mouseY, mouseDown)) return false;
-
 	if (!RenderSceneToTexture()) {
 		return false;
 	}
-	/**/
+	/*
+	if (!UpdateMouseStrings(mouseX, mouseY, mouseDown)) return false;
 
+	/**/
+	if (!_blur->BlurTexture(_direct3D.get(), _camera.get(),
+		&_renderTextures[0], _textureShader.get(), _blurShader.get())) {
+		return false;
+	}
+
+	_camera->SetPosition(0, 0, -10.f);
+	_camera->Render();
 	return Render();
 }
 
@@ -339,13 +362,37 @@ bool ApplicationClass::Render()
 	_direct3D->GetProjectionMatrix(projectionMatrix);
 	_direct3D->GetOrthoMatrix(orthoMatrix);
 
-	_models[0].Render(_direct3D->GetDeviceContext());
 
-	if (!_depthShader->Render(_direct3D->GetDeviceContext(),
-		_models[0].GetIndexCount(),
-		worldMatrix, viewMatrix, projectionMatrix)) {
+	//_models[0].Render(_direct3D->GetDeviceContext());
+	_fullScreenWindow->Render(_direct3D->GetDeviceContext());
+	if (!_textureShader->Render(_direct3D->GetDeviceContext(),
+		_fullScreenWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix,
+		//_textures[0].GetTexture()))
+		_renderTextures[0].GetShaderResourceView()))
+	{
 		return false;
 	}
+	/*
+	if (!_blurShader->Render(_direct3D->GetDeviceContext(),
+		_models[0].GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+		_textures[0].GetTexture(), 800, 600, 0))
+		//_renderTextures[0].GetShaderResourceView(), 800, 600, 0))
+	{
+		return false;
+	}
+	/*
+	if (!_shaderManager->RenderTextureShader(_direct3D->GetDeviceContext(), _models[0].GetIndexCount(),
+		worldMatrix, viewMatrix, projectionMatrix, _textures[0].GetTexture())) {
+		return false;
+	}
+
+	if (!_textureShader->Render(_direct3D->GetDeviceContext(),
+		_fullScreenWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix,
+		//_textures[0].GetTexture()))
+		_renderTextures[0].GetShaderResourceView()))
+	{
+		return false;
+	}*/
 
 	/*
 	XMFLOAT3 cameraPosition = _camera->GetPosition();
@@ -415,7 +462,7 @@ bool ApplicationClass::RenderSceneToTexture()
 
 	_camera->Render();
 
-	XMMATRIX worldMatrix, viewMatrix, projectionMatrix;
+	XMMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
 
 	_direct3D->GetWorldMatrix(worldMatrix);
 	_camera->GetViewMatrix(viewMatrix);

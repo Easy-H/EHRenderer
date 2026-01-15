@@ -16,6 +16,7 @@ class SimpleModelClass;
 class ModelClass;
 class SpriteClass;
 class ColorShaderClass;
+class TextureShaderClass;
 class MultiTextureShaderClass;
 class AlphaMapShaderClass;
 class SpecMapShaderClass;
@@ -32,7 +33,6 @@ class RefractionShaderClass;
 class GlassShaderClass;
 class FireShaderClass;
 class DepthShaderClass;
-class BlurShaderClass;
 
 class LightClass;
 class FontClass;
@@ -50,6 +50,10 @@ class ShaderManagerClass;
 class RenderTextureClass;
 class DisplayPlaneClass;
 
+class BlurClass;
+class OrthoWindowClass;
+class BlurShaderClass;
+
 class ApplicationClass {
 private:
 	std::unique_ptr<D3DClass> _direct3D;
@@ -61,6 +65,7 @@ private:
 	std::unique_ptr<SpriteClass> _sprite;
 
 	std::unique_ptr<ColorShaderClass> _colorShader;
+	std::unique_ptr<TextureShaderClass> _textureShader;
 	std::unique_ptr<MultiTextureShaderClass> _multiTextureShader;
 	std::unique_ptr<AlphaMapShaderClass> _alphaMapShader;
 	std::unique_ptr<SpecMapShaderClass> _specMapShader;
@@ -76,7 +81,6 @@ private:
 	std::unique_ptr<GlassShaderClass> _glassShader;
 	std::unique_ptr<FireShaderClass> _fireShader;
 	std::unique_ptr<DepthShaderClass> _depthShader;
-	std::unique_ptr<BlurShaderClass> _blurShader;
 
 	std::unique_ptr<TextureClass[]> _textures;
 	
@@ -97,6 +101,10 @@ private:
 
 	std::unique_ptr<RenderTextureClass[]> _renderTextures;
 	std::unique_ptr<DisplayPlaneClass> _displayPlane;
+
+	std::unique_ptr<OrthoWindowClass> _fullScreenWindow;
+	std::unique_ptr<BlurClass> _blur;
+	std::unique_ptr<BlurShaderClass> _blurShader;
 	
 	int _numLights;
 	int _stringCount;

@@ -24,7 +24,7 @@ PixelInputType BlurVertexShader(VertexInputType input) {
 	output.position = mul(output.position, viewMatrix);
 	output.position = mul(output.position, projectionMatrix);
 
-	output.tex = output.tex;
+	output.tex = input.tex;
 
 	return output;
 }

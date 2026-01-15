@@ -41,7 +41,7 @@ add_executable (EHRenderer WIN32
 	"DirectX11/Shader/Water/WaterShaderClass.cpp"
 	"DirectX11/Shader/Glass/GlassShaderClass.cpp"
 	"DirectX11/Shader/Fire/FireShaderClass.cpp"
-	"DirectX11/Shader/Depth/DepthShaderClass.cpp" "DirectX11/Shader/Blur/BlurShaderClass.cpp" "DirectX11/Shader/Blur/BlurClass.cpp")
+	"DirectX11/Shader/Depth/DepthShaderClass.cpp" "DirectX11/Shader/Blur/BlurShaderClass.cpp" "DirectX11/Shader/Blur/BlurClass.cpp" "DirectX11/OrthoWindowClass.cpp")
 	
 
 # target_link_libraries (EHRenderer PUBLIC "wrl.lib")

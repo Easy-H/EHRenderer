@@ -129,7 +129,7 @@ bool BlurShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* v
 	D3D11_BUFFER_DESC screenBufferDesc{};
 
 	screenBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	screenBufferDesc.ByteWidth = sizeof(MatrixBufferType);
+	screenBufferDesc.ByteWidth = sizeof(ScreenBufferType);
 	screenBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	screenBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	screenBufferDesc.MiscFlags = 0;
