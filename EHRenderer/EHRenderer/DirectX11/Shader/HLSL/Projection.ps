@@ -1,0 +1,50 @@
+Texture2D shaderTexture : register(t0);
+Texture2D projectionTexture : register(t1);
+
+SamplerState SampleType : register(s0);
+
+struct PixelInputType {
+	float4 position : SV_POSITION;
+	float2 tex : TEXCOORD0;
+	float3 normal : NORMAL;
+	float4 viewPosition : TEXCOORD1;
+	float3 lightPos : TEXCOORD2;
+};
+
+cbuffer LightBuffer {
+	float4 ambientColor;
+	float4 diffuseColor;
+	float brightness;
+	float3 padding;
+};
+
+float4 ProjectionPixelShader(PixelInputType input) : SV_TARGET {
+
+	float lightIntensity;
+	float4 color;
+	float4 textureColor;
+	float2 projectTexCoord;
+	float4 projectionColor;
+
+	lightIntensity = saturate(dot(input.normal, input.lightPos));
+
+	if (lightIntensity > 0.f) {
+		color = (diffuseColor * lightIntensity) * brightness;
+	}
+
+	textureColor = shaderTexture.Sample(SampleType, input.tex);
+
+	projectTexCoord.x = input.viewPosition.x / input.viewPosition.w / 2.f + 0.5f;
+	projectTexCoord.y = -input.viewPosition.y / input.viewPosition.w / 2.f + 0.5f;
+
+	if ((saturate(projectTexCoord.x) == projectTexCoord.x) && (saturate(projectTexCoord.y) == projectTexCoord.y)) {
+		
+		projectionColor = projectionTexture.Sample(SampleType, projectTexCoord);
+		color = saturate((color * projectionColor * textureColor)) + (ambientColor * textureColor);
+	}
+	else {
+		color = ambientColor * textureColor;
+	}
+
+	return color;
+}

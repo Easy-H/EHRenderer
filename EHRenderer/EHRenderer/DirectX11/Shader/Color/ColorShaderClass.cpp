@@ -101,16 +101,8 @@ bool ColorShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* 
 		return false;
 	}
 
-	D3D11_BUFFER_DESC matrixBufferDesc;
-
-	matrixBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	matrixBufferDesc.ByteWidth = sizeof(MatrixBufferType);
-	matrixBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	matrixBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	matrixBufferDesc.MiscFlags = 0;
-	matrixBufferDesc.StructureByteStride = 0;
-
-	if (FAILED(device->CreateBuffer(&matrixBufferDesc, nullptr, _matrixBuffer.GetAddressOf()))) {
+	if (!CreateConstantBuffer(device, sizeof(MatrixBufferType),
+		_matrixBuffer.GetAddressOf())) {
 		return false;
 	}
 

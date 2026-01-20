@@ -33,6 +33,8 @@ class RefractionShaderClass;
 class GlassShaderClass;
 class FireShaderClass;
 class DepthShaderClass;
+class FadeShaderClass;
+class ProjectionShaderClass;
 
 class LightClass;
 class FontClass;
@@ -54,10 +56,18 @@ class BlurClass;
 class OrthoWindowClass;
 class BlurShaderClass;
 
+class ParticleSystemClass;
+class ParticleShaderClass;
+
 class ApplicationClass {
 private:
 	std::unique_ptr<D3DClass> _direct3D;
-	std::unique_ptr<CameraClass> _camera;
+	std::unique_ptr<CameraClass[]> _cameras;
+
+	std::unique_ptr<TimerClass> _timer;
+
+	std::unique_ptr<ParticleSystemClass> _particleSystem;
+	std::unique_ptr<ParticleShaderClass> _particleShader;
 	
 	std::unique_ptr<ModelClass[]> _models;
 	std::unique_ptr<SimpleModelClass> _simpleModel;
@@ -81,6 +91,8 @@ private:
 	std::unique_ptr<GlassShaderClass> _glassShader;
 	std::unique_ptr<FireShaderClass> _fireShader;
 	std::unique_ptr<DepthShaderClass> _depthShader;
+	std::unique_ptr<FadeShaderClass> _fadeShader;
+	std::unique_ptr<ProjectionShaderClass> _projectionShader;
 
 	std::unique_ptr<TextureClass[]> _textures;
 	
@@ -93,12 +105,10 @@ private:
 
 	std::unique_ptr<ShaderManagerClass> _shaderManager;
 
-	std::unique_ptr<TimerClass> _timer;
 	std::unique_ptr<PositionClass> _position;
 	std::unique_ptr<FrustumClass> _frustum;
 	std::unique_ptr<ModelListClass> _modelList;
-
-
+	
 	std::unique_ptr<RenderTextureClass[]> _renderTextures;
 	std::unique_ptr<DisplayPlaneClass> _displayPlane;
 

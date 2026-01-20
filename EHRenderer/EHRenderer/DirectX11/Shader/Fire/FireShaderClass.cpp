@@ -100,8 +100,7 @@ bool FireShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* v
 	polygonLayout[0].AlignedByteOffset = 0;
 	polygonLayout[0].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 	polygonLayout[0].InstanceDataStepRate = 0;
-
-
+	
 	polygonLayout[1].SemanticName = "TEXCOORD";
 	polygonLayout[1].SemanticIndex = 0;
 	polygonLayout[1].Format = DXGI_FORMAT_R32G32_FLOAT;
@@ -118,87 +117,34 @@ bool FireShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* v
 		return false;
 	}
 
-	D3D11_BUFFER_DESC matrixBufferDesc{};
-
-	matrixBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	matrixBufferDesc.ByteWidth = sizeof(MatrixBufferType);
-	matrixBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	matrixBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	matrixBufferDesc.MiscFlags = 0;
-	matrixBufferDesc.StructureByteStride = 0;
-
-	if (FAILED(device->CreateBuffer(&matrixBufferDesc, nullptr, _matrixBuffer.GetAddressOf()))) {
+	if (!CreateConstantBuffer(device, sizeof(MatrixBufferType),
+		_matrixBuffer.GetAddressOf())) {
 		return false;
 	}
 
-	D3D11_BUFFER_DESC distortionBufferDesc{};
-
-	distortionBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	distortionBufferDesc.ByteWidth = sizeof(DistortionBufferType);
-	distortionBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	distortionBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	distortionBufferDesc.MiscFlags = 0;
-	distortionBufferDesc.StructureByteStride = 0;
-
-	if (FAILED(device->CreateBuffer(&distortionBufferDesc, nullptr, _distortionBuffer.GetAddressOf()))) {
+	if (!CreateConstantBuffer(device, sizeof(DistortionBufferType),
+		_distortionBuffer.GetAddressOf())) {
 		return false;
 	}
 
-	D3D11_BUFFER_DESC noiseBufferDesc{};
-
-	noiseBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	noiseBufferDesc.ByteWidth = sizeof(NoiseBufferType);
-	noiseBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	noiseBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	noiseBufferDesc.MiscFlags = 0;
-	noiseBufferDesc.StructureByteStride = 0;
-
-	if (FAILED(device->CreateBuffer(&noiseBufferDesc, nullptr, _noiseBuffer.GetAddressOf()))) {
+	if (!CreateConstantBuffer(device, sizeof(NoiseBufferType),
+		_noiseBuffer.GetAddressOf())) {
 		return false;
 	}
 
-	D3D11_SAMPLER_DESC samplerDescWrap{};
+	if (!CreateSamplerState(device, D3D11_TEXTURE_ADDRESS_WRAP,
+		_sampleStateWrap.GetAddressOf())) {
+		return false;
+	}
+	
 
-	samplerDescWrap.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	samplerDescWrap.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDescWrap.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDescWrap.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDescWrap.MipLODBias = 0.f;
-	samplerDescWrap.MaxAnisotropy = 1;
-	samplerDescWrap.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-	samplerDescWrap.BorderColor[0] = 0;
-	samplerDescWrap.BorderColor[1] = 0;
-	samplerDescWrap.BorderColor[2] = 0;
-	samplerDescWrap.BorderColor[3] = 0;
-	samplerDescWrap.MinLOD = 0;
-	samplerDescWrap.MaxLOD = D3D11_FLOAT32_MAX;
-
-	if (FAILED(device->CreateSamplerState(&samplerDescWrap, _sampleStateWrap.GetAddressOf()))) {
+	if (!CreateSamplerState(device, D3D11_TEXTURE_ADDRESS_CLAMP,
+		_sampleStateClamp.GetAddressOf())) {
 		return false;
 	}
 
-	D3D11_SAMPLER_DESC samplerDescClamp{};
-
-	samplerDescClamp.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	samplerDescClamp.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-	samplerDescClamp.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-	samplerDescClamp.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-	samplerDescClamp.MipLODBias = 0.f;
-	samplerDescClamp.MaxAnisotropy = 1;
-	samplerDescClamp.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-	samplerDescClamp.BorderColor[0] = 0;
-	samplerDescClamp.BorderColor[1] = 0;
-	samplerDescClamp.BorderColor[2] = 0;
-	samplerDescClamp.BorderColor[3] = 0;
-	samplerDescClamp.MinLOD = 0;
-	samplerDescClamp.MaxLOD = D3D11_FLOAT32_MAX;
-
-	if (FAILED(device->CreateSamplerState(&samplerDescClamp, _sampleStateClamp.GetAddressOf()))) {
-		return false;
-	}
 
 	return true;
-
 }
 
 void FireShaderClass::ShutdownShader()

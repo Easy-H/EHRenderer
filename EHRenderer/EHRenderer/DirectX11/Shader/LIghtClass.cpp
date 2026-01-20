@@ -14,7 +14,7 @@ LightClass::~LightClass()
 
 void LightClass::SetPosition(float x, float y, float z)
 {
-	_position = XMFLOAT4(x, y, z, 1.f);
+	_position = XMFLOAT3(x, y, z);
 }
 
 void LightClass::SetDiffuseColor(float red, float green, float blue, float alpha)

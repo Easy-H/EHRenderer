@@ -18,6 +18,7 @@ BlurClass::BlurClass(const BlurClass&)
 
 BlurClass::~BlurClass()
 {
+
 }
 
 bool BlurClass::Initialize(D3DClass* direct3D,

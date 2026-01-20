@@ -24,6 +24,30 @@ void CameraClass::SetPosition(float x, float y, float z)
 	_positionX = x;
 	_positionY = y;
 	_positionZ = z;
+
+	Render();
+}
+
+void CameraClass::SetLookAt(float x, float y, float z)
+{
+	XMFLOAT3 up{ 0.f, 1.f, 0.f };
+
+	XMVECTOR upVector = XMLoadFloat3(&up);
+	XMFLOAT3 position{ _positionX, _positionY, _positionZ };
+	XMVECTOR positionVector = XMLoadFloat3(&position);
+
+	XMFLOAT3 lookAt = XMFLOAT3(x, y, z);
+	XMVECTOR lookAtVector = XMLoadFloat3(&lookAt);
+
+	_viewMatrix = XMMatrixLookAtLH(positionVector, lookAtVector, upVector);
+
+}
+
+void CameraClass::SetProjectionParameters(
+	float fieldOfView, float aspectRatio, float nearPlane, float farPlane)
+{
+	_projectionMatrix = XMMatrixPerspectiveFovLH(
+		fieldOfView, aspectRatio, nearPlane, farPlane);
 }
 
 void CameraClass::SetRotation(float x, float y, float z)
@@ -31,6 +55,8 @@ void CameraClass::SetRotation(float x, float y, float z)
 	_rotationX = x;
 	_rotationY = y;
 	_rotationZ = z;
+
+	Render();
 }
 
 XMFLOAT3 CameraClass::GetPosition()
@@ -45,8 +71,7 @@ XMFLOAT3 CameraClass::GetRotation()
 
 void CameraClass::Render()
 {
-	XMFLOAT3 up{
-		0.f, 1.f, 0.f };
+	XMFLOAT3 up{0.f, 1.f, 0.f };
 
 	XMVECTOR upVector = XMLoadFloat3(&up);
 	
@@ -74,6 +99,10 @@ void CameraClass::Render()
 void CameraClass::GetViewMatrix(XMMATRIX& viewMatrix)
 {
 	viewMatrix = _viewMatrix;
+}
+
+void CameraClass::GetProjectionMatrix(XMMATRIX& projectionMatrix) {
+	projectionMatrix = _projectionMatrix;
 }
 
 void CameraClass::RenderRefleciton(float height)

@@ -11,7 +11,7 @@ add_executable (EHRenderer WIN32
 	"DirectX11/Data/ModelClass.cpp"
 	
 	"DirectX11/Shader/Color/ColorShaderClass.cpp"
-	"DirectX11/Shader/Texture/TextureShaderClass.cpp"
+	"DirectX11/Shader/Particle/ParticleShaderClass.cpp"
 	"DirectX11/Shader/Translate/TranslateShaderClass.cpp"
 	"DirectX11/Shader/Light/LightShaderClass.cpp"
 	"DirectX11/Shader/Font/FontShaderClass.cpp"
@@ -21,6 +21,8 @@ add_executable (EHRenderer WIN32
 	
 	"DirectX11/Data/FontClass.cpp" "DirectX11/Data/TextClass.cpp"
 	"DirectX11/Shader/ShaderBase.cpp" "DirectX11/InputClass.cpp"
+	"DirectX11/Shader/Projection/ProjectionShaderClass.cpp"
+	"DirectX11/Shader/Texture/TextureShaderClass.cpp"
 	"DirectX11/Shader/MultiTexture/MultiTextureShaderClass.cpp"
 	"DirectX11/Shader/LightMap/LightMapShaderClass.cpp"
 	"DirectX11/Shader/AlphaMap/AlphaMapShaderClass.cpp"
@@ -41,7 +43,14 @@ add_executable (EHRenderer WIN32
 	"DirectX11/Shader/Water/WaterShaderClass.cpp"
 	"DirectX11/Shader/Glass/GlassShaderClass.cpp"
 	"DirectX11/Shader/Fire/FireShaderClass.cpp"
-	"DirectX11/Shader/Depth/DepthShaderClass.cpp" "DirectX11/Shader/Blur/BlurShaderClass.cpp" "DirectX11/Shader/Blur/BlurClass.cpp" "DirectX11/OrthoWindowClass.cpp")
+	"DirectX11/Shader/Depth/DepthShaderClass.cpp"
+	"DirectX11/Shader/Blur/BlurShaderClass.cpp"
+	"DirectX11/Shader/Blur/BlurClass.cpp"
+	"DirectX11/OrthoWindowClass.cpp"
+	"DirectX11/Shader/Fade/FadeShaderClass.cpp"
+	"DirectX11/Shader/Particle/ParticleShaderClass.cpp"
+	"DirectX11/Shader/Particle/ParticleSystemClass.cpp"
+	"DirectX11/Shader/Projection/ProjectionShaderClass.cpp")
 	
 
 # target_link_libraries (EHRenderer PUBLIC "wrl.lib")

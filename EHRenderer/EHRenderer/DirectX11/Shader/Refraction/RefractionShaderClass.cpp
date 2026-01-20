@@ -124,65 +124,23 @@ bool RefractionShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WC
 		return false;
 	}
 
-	D3D11_BUFFER_DESC matrixBufferDesc{};
-
-	matrixBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	matrixBufferDesc.ByteWidth = sizeof(MatrixBufferType);
-	matrixBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	matrixBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	matrixBufferDesc.MiscFlags = 0;
-	matrixBufferDesc.StructureByteStride = 0;
-
-	if (FAILED(device->CreateBuffer(&matrixBufferDesc, nullptr,
-		_matrixBuffer.GetAddressOf()))) {
+	if (!CreateConstantBuffer(device, sizeof(MatrixBufferType),
+		_matrixBuffer.GetAddressOf())) {
 		return false;
 	}
 
-	D3D11_BUFFER_DESC lightBufferDesc{};
-
-	lightBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	lightBufferDesc.ByteWidth = sizeof(LightBufferType);
-	lightBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	lightBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	lightBufferDesc.MiscFlags = 0;
-	lightBufferDesc.StructureByteStride = 0;
-
-	if (FAILED(device->CreateBuffer(&lightBufferDesc, nullptr,
-		_lightBuffer.GetAddressOf()))) {
+	if (!CreateConstantBuffer(device, sizeof(LightBufferType),
+		_lightBuffer.GetAddressOf())) {
 		return false;
 	}
 
-	D3D11_BUFFER_DESC clipPlaneBufferDesc{};
-
-	clipPlaneBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	clipPlaneBufferDesc.ByteWidth = sizeof(ClipPlaneBufferType);
-	clipPlaneBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	clipPlaneBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	clipPlaneBufferDesc.MiscFlags = 0;
-	clipPlaneBufferDesc.StructureByteStride = 0;
-
-	if (FAILED(device->CreateBuffer(&clipPlaneBufferDesc, nullptr,
-		_clipPlaneBuffer.GetAddressOf()))) {
+	if (!CreateConstantBuffer(device, sizeof(ClipPlaneBufferType),
+		_clipPlaneBuffer.GetAddressOf())) {
 		return false;
 	}
 
-	D3D11_SAMPLER_DESC samplerDesc{};
-
-	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.MipLODBias = 0.f;
-	samplerDesc.MaxAnisotropy = 1;
-	samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-	samplerDesc.BorderColor[0] = 0;
-	samplerDesc.BorderColor[1] = 0;
-	samplerDesc.BorderColor[2] = 0;
-	samplerDesc.BorderColor[3] = 0;
-	samplerDesc.MinLOD = 0;
-	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-
-	if (FAILED(device->CreateSamplerState(&samplerDesc, _sampleState.GetAddressOf()))) {
+	if (!CreateSamplerState(device, D3D11_TEXTURE_ADDRESS_WRAP,
+		_sampleState.GetAddressOf())) {
 		return false;
 	}
 

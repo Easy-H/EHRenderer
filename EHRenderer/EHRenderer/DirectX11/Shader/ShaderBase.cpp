@@ -3,7 +3,7 @@
 
 using namespace std;
 
-void ShaderBase::OutputShaderErrorMessage(ID3D10Blob* errorMessage, HWND hwnd, WCHAR* shaderFilename)
+void ShaderBase::OutputShaderErrorMessage(ID3D10Blob* errorMessage, HWND hwnd, WCHAR* filename)
 {
 
 	char* compileErrors = (char*)(errorMessage->GetBufferPointer());
@@ -18,6 +18,50 @@ void ShaderBase::OutputShaderErrorMessage(ID3D10Blob* errorMessage, HWND hwnd, W
 
 	fout.close();
 
-	MessageBoxW(hwnd, L"Error compiling shader. Check shader-error.txt for message.", shaderFilename, MB_OK);
+	MessageBoxW(hwnd, L"Error compiling shader. Check shader-error.txt for message.", filename, MB_OK);
 
+}
+
+bool ShaderBase::CreateConstantBuffer(ID3D11Device* device, unsigned int size, ID3D11Buffer** target)
+{
+	D3D11_BUFFER_DESC bufferDesc{};
+
+	bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	bufferDesc.ByteWidth = size;
+	bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	bufferDesc.MiscFlags = 0;
+	bufferDesc.StructureByteStride = 0;
+
+	if (FAILED(device->CreateBuffer(&bufferDesc, nullptr, target))) {
+		return false;
+	}
+
+	return true;
+
+}
+
+bool ShaderBase::CreateSamplerState(ID3D11Device* device, D3D11_TEXTURE_ADDRESS_MODE mode, ID3D11SamplerState** target)
+{
+	D3D11_SAMPLER_DESC samplerDesc{};
+
+	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	samplerDesc.AddressU = mode;
+	samplerDesc.AddressV = mode;
+	samplerDesc.AddressW = mode;
+	samplerDesc.MipLODBias = 0.f;
+	samplerDesc.MaxAnisotropy = 1;
+	samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+	samplerDesc.BorderColor[0] = 0;
+	samplerDesc.BorderColor[1] = 0;
+	samplerDesc.BorderColor[2] = 0;
+	samplerDesc.BorderColor[3] = 0;
+	samplerDesc.MinLOD = 0;
+	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+	if (FAILED(device->CreateSamplerState(&samplerDesc, target))) {
+		return false;
+	}
+
+	return true;
 }
