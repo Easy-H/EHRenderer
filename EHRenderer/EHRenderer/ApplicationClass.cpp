@@ -3,8 +3,8 @@
 #include "TimerClass.hpp"
 
 #include "DirectX11/InputClass.hpp"
-#include "DirectX11/D3DClass.hpp"
-#include "DirectX11/CameraClass.hpp"
+#include "DirectX11/Object/CameraClass.hpp"
+#include "DirectX11/Object/LightClass.hpp"
 
 #include "DirectX11/Shader/Particle/ParticleShaderClass.hpp"
 #include "DirectX11/Shader/Particle/ParticleSystemClass.hpp"
@@ -19,13 +19,12 @@
 #include "DirectX11/ShaderManager.hpp"
 #include "DirectX11/Shader/Color/ColorShaderClass.hpp"
 #include "DirectX11/Shader/Texture/TextureShaderClass.hpp"
-#include "DirectX11/Shader/MultiTexture/MultiTextureShaderClass.hpp"
+#include "DirectX11/Shader/Texture/MultiTextureShaderClass.hpp"
 #include "DirectX11/Shader/AlphaMap/AlphaMapShaderClass.hpp"
 #include "DirectX11/Shader/NormalMap/NormalMapShaderClass.hpp"
 #include "DirectX11/Shader/SpecMap/SpecMapShaderClass.hpp"
 #include "DirectX11/Shader/LightMap/LightMapShaderClass.hpp"
 #include "DirectX11/Shader/Light/LightShaderClass.hpp"
-#include "DirectX11/Shader/LightClass.hpp"
 #include "DirectX11/Shader/Font/FontShaderClass.hpp"
 #include "DirectX11/Shader/Fog/FogShaderClass.hpp"
 #include "DirectX11/Shader/ClipPlane/ClipPlaneShaderClass.hpp"
@@ -40,16 +39,20 @@
 #include "DirectX11/Shader/Blur/BlurShaderClass.hpp"
 #include "DirectX11/Shader/Fade/FadeShaderClass.hpp"
 #include "DirectX11/Shader/Projection/ProjectionShaderClass.hpp"
+#include "DirectX11/Shader/Shadow/ShadowShaderClass.hpp"
+#include "DirectX11/Shader/Shadow/MultiLIghtShadowShaderClass.hpp"
+#include "DirectX11/Shader/Shadow/DirectionalLightShadowShaderClass.hpp"
+#include "DirectX11/Shader/Shadow/SoftShadowShaderClass.hpp"
 
-#include "DirectX11/OrthoWindowClass.hpp"
+#include "DirectX11/Data/OrthoWindowClass.hpp"
 #include "DirectX11/Shader/Blur/BlurClass.hpp"
 
 #include "DirectX11/FrustumClass.hpp"
 #include "DirectX11/PositionClass.hpp"
 #include "DirectX11/ModelListClass.hpp"
 
-#include "DirectX11/RenderTextureClass.hpp"
-#include "DirectX11/DisplayPlaneClass.hpp"
+#include "DirectX11/Data/RenderTextureClass.hpp"
+#include "DirectX11/Data/DisplayPlaneClass.hpp"
 
 ApplicationClass::ApplicationClass() {
 
@@ -81,13 +84,16 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	_cameras[2].SetLookAt(0.f, 0.f, 0.f);
 	_cameras[2].SetProjectionParameters(3.141592 / 2.f, 1.f, 1.f, 100.f);
 
-	_models = std::make_unique<ModelClass[]>(4);
 
-	char modelFilename[2][128]{};
-	strcpy_s(modelFilename[0], "./Assets/plane01.txt");
-	strcpy_s(modelFilename[1], "./Assets/cube.txt");
+	_numModels = 3;
+	_models = std::make_unique<ModelClass[]>(_numModels);
 
-	for (int i = 0; i < 2; i++) {
+	char modelFilename[3][128]{};
+	strcpy_s(modelFilename[0], "./Assets/cube.txt");
+	strcpy_s(modelFilename[1], "./Assets/sphere.txt");
+	strcpy_s(modelFilename[2], "./Assets/plane01.txt");
+
+	for (int i = 0; i < _numModels; i++) {
 		if (!_models[i].Initialize(_direct3D->GetDevice(),
 			_direct3D->GetDeviceContext(), modelFilename[i])) {
 			MessageBox(hwnd, "Could not Initilalize the model object", modelFilename[i], MB_OK);
@@ -98,9 +104,9 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	_textures = make_unique<TextureClass[]>(3);
 	
 	char textureFilename[3][128]{};
-	strcpy_s(textureFilename[0], "./Assets/metal001.tga");
-	strcpy_s(textureFilename[1], "./Assets/stone01.tga");
-	strcpy_s(textureFilename[2], "./Assets/grate.tga");
+	strcpy_s(textureFilename[0], "./Assets/wall01.tga");
+	strcpy_s(textureFilename[1], "./Assets/ice01.tga");
+	strcpy_s(textureFilename[2], "./Assets/metal001.tga");
 
 	for (int i = 0; i < 3; i++) {
 		if (!_textures[i].Initialize(_direct3D->GetDevice(),
@@ -118,30 +124,27 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
-	_numLights = 1;
+	_numLights = 2;
 
 	_lights = make_unique<LightClass[]>(_numLights);
 
 	_lights[0].SetAmbientColor(0.15f, 0.15f, 0.15f, 1.f);
 	_lights[0].SetDiffuseColor(1.0f, 1.f, 1.f, 1.f);
-	_lights[0].SetPosition(2.f, 5.f, -2.f);
+	_lights[0].SetPosition(5.f, 8.f, -5.f);
+	//_lights[0].SetOrthoParameters(20.f, 1.f, 50.f);
+	_lights[0].SetProjectionParameters(3.141592 / 2.f, 1.f, SCREEN_NEAR, SCREEN_DEPTH);
+
+	_lights[1].SetAmbientColor(0.15f, 0.15f, 0.15f, 1.f);
+	_lights[1].SetDiffuseColor(1.0f, 1.f, 1.f, 1.f);
+	_lights[1].SetPosition(-5.f, 8.f, -5.f);
+	_lights[1].SetProjectionParameters(3.141592 / 2.f, 1.f, SCREEN_NEAR, SCREEN_DEPTH);
+
+	_lights[1].SetLookAt(0, 0, 0);
 
 	_particleSystem = make_unique<ParticleSystemClass>();
 	
 	if (!_particleSystem->Initialize(_direct3D->GetDevice(),
 		_direct3D->GetDeviceContext(), textureFilename[0])) {
-		return false;
-	}
-
-	_particleShader = make_unique<ParticleShaderClass>();
-
-	if (!_particleShader->Initialize(_direct3D->GetDevice(), hwnd)) {
-		return false;
-	}
-
-	_fontShader = make_unique<FontShaderClass>();
-	if (!_fontShader->Initialize(_direct3D->GetDevice(), hwnd)) {
-		MessageBox(hwnd, "Error", "Error", MB_OK);
 		return false;
 	}
 
@@ -151,89 +154,86 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
+	_particleShader = make_unique<ParticleShaderClass>();
+
+	if (!_particleShader->Initialize(_direct3D->GetDevice(), hwnd)) {
+		return false;
+	}
 	_shaderManager = make_unique<ShaderManagerClass>();
 
 	if (!_shaderManager->Initialize(_direct3D->GetDevice(), hwnd)) {
 		return false;
 	}
 
-	_textureShader = make_unique<TextureShaderClass>();
-
-	if (!_textureShader->Initialize(_direct3D->GetDevice(), hwnd)) {
+	if (!CreateShader<FontShaderClass>(hwnd, _fontShader)) {
 		return false;
 	}
 
-	_fogShader = make_unique<FogShaderClass>();
-
-	if (!_fogShader->Initialize(_direct3D->GetDevice(), hwnd)) {
+	if (!CreateShader<TextureShaderClass>(hwnd, _textureShader)) {
 		return false;
 	}
 
-
-	_clipPlaneShader = make_unique<ClipPlaneShaderClass>();
-
-	if (!_clipPlaneShader->Initialize(_direct3D->GetDevice(), hwnd)) {
+	if (!CreateShader<FogShaderClass>(hwnd, _fogShader)) {
 		return false;
 	}
 
-	_translateShader = make_unique<TranslateShaderClass>();
-
-	if (!_translateShader->Initialize(_direct3D->GetDevice(), hwnd)) {
-		return false;
-	}
-	
-	_transparentShader = make_unique<TransparentShaderClass>();
-
-	if (!_transparentShader->Initialize(_direct3D->GetDevice(), hwnd)) {
+	if (!CreateShader<ClipPlaneShaderClass>(hwnd, _clipPlaneShader)) {
 		return false;
 	}
 
-	_reflectionShader = make_unique<ReflectionShaderClass>();
-
-	if (!_reflectionShader->Initialize(_direct3D->GetDevice(), hwnd)) {
+	if (!CreateShader<TranslateShaderClass>(hwnd, _translateShader)) {
 		return false;
 	}
 
-	_waterShader = make_unique<WaterShaderClass>();
-
-	if (!_waterShader->Initialize(_direct3D->GetDevice(), hwnd)) {
+	if (!CreateShader<TransparentShaderClass>(hwnd, _transparentShader)) {
 		return false;
 	}
 
-	_refractionShader = make_unique<RefractionShaderClass>();
-
-	if (!_refractionShader->Initialize(_direct3D->GetDevice(), hwnd)) {
+	if (!CreateShader<ReflectionShaderClass>(hwnd, _reflectionShader)) {
 		return false;
 	}
 
-	_glassShader = make_unique<GlassShaderClass>();
-
-	if (!_glassShader->Initialize(_direct3D->GetDevice(), hwnd)) {
+	if (!CreateShader<WaterShaderClass>(hwnd, _waterShader)) {
 		return false;
 	}
 
-	_fireShader = make_unique<FireShaderClass>();
-
-	if (!_fireShader->Initialize(_direct3D->GetDevice(), hwnd)) {
+	if (!CreateShader<RefractionShaderClass>(hwnd, _refractionShader)) {
 		return false;
 	}
 
-	_depthShader = make_unique<DepthShaderClass>();
-
-	if (!_depthShader->Initialize(_direct3D->GetDevice(), hwnd)) {
+	if (!CreateShader<GlassShaderClass>(hwnd, _glassShader)) {
 		return false;
 	}
 
-	_fadeShader = make_unique<FadeShaderClass>();
-
-	if (!_fadeShader->Initialize(_direct3D->GetDevice(), hwnd)) {
+	if (!CreateShader<FireShaderClass>(hwnd, _fireShader)) {
 		return false;
 	}
 
-	_projectionShader = make_unique<ProjectionShaderClass>();
+	if (!CreateShader<DepthShaderClass>(hwnd, _depthShader)) {
+		return false;
+	}
 
-	if (!_projectionShader->Initialize(_direct3D->GetDevice(), hwnd)) {
-		MessageBox(hwnd, "Error", "Error", MB_OK);
+	if (!CreateShader<FadeShaderClass>(hwnd, _fadeShader)) {
+		return false;
+	}
+
+	if (!CreateShader<ProjectionShaderClass>(hwnd, _projectionShader)) {
+		return false;
+	}
+
+	if (!CreateShader<ShadowShaderClass>(hwnd, _shadowShader)) {
+		return false;
+	}
+
+	if (!CreateShader<MultiLightShadowShaderClass>(hwnd, _mShadowShader)) {
+		return false;
+	}
+
+	if (!CreateShader<DirectionalLightShadowShaderClass>(hwnd, _dShadowShader)) {
+		return false;
+	}
+
+	if (!CreateShader<SoftShadowShaderClass>(hwnd, _sShadowShader)) {
 		return false;
 	}
 
@@ -280,14 +280,22 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	_position->SetPosition(0.f, 7.f, -10.f);
 	_frustum = make_unique<FrustumClass>();
 
-	_renderTextures = make_unique<RenderTextureClass[]>(2);
+	_renderTextures = make_unique<RenderTextureClass[]>(3);
 
-	for (int i = 0; i < 2; i++) {
+	for (int i = 0; i < 3; i++) {
 		if (!_renderTextures[i].Initialize(_direct3D->GetDevice(),
 			screenWidth, screenHeight, SCREEN_DEPTH, SCREEN_NEAR, 1)) {
 			return false;
 		}
-		
+	}
+
+	_depthTextures = make_unique<RenderTextureClass[]>(_numLights);
+
+	for (int i = 0; i < _numLights; i++) {
+		if (!_depthTextures[i].Initialize(_direct3D->GetDevice(),
+			screenWidth, screenHeight, SCREEN_DEPTH, SCREEN_NEAR, 1)) {
+			return false;
+		}
 	}
 
 	_displayPlane = make_unique<DisplayPlaneClass>();
@@ -359,49 +367,215 @@ bool ApplicationClass::Frame(InputClass& input)
 		return false;
 	}
 
-	if (!RenderSceneToTexture()) {
+	static float lightAngle = 270.f;
+	static float lightPosX = 9.f;
+
+	float frameTime = 10.0f;
+
+	// Update the position of the light each frame.
+	lightPosX -= 0.003f * frameTime;
+
+	// Update the angle of the light each frame.
+	lightAngle -= 0.03f * frameTime;
+	if (lightAngle < 90.0f)
+	{
+		lightAngle = 270.0f;
+
+		// Reset the light position also.
+		lightPosX = 9.0f;
+	}
+	float radians = lightAngle * 0.0174532925f;
+
+	// Update the direction of the light.
+	_lights[0].SetDirection(sinf(radians), cosf(radians), 0.0f);
+	
+		// Set the position and lookat for the light.
+	_lights[0].SetPosition(lightPosX, 8.0f, -0.1f);
+	_lights[0].SetLookAt(-lightPosX, 0.0f, 0.0f);
+
+	if (!RenderDepthToTexture()) {
 		return false;
 	}
+
+	if (!RenderBlackAndWhilteShadows(1)) {
+		return false;
+	}
+
+	//return PostProcess(1);
+
+
+	if (!_blur->BlurTexture(_direct3D.get(), &_cameras[0],
+		&_renderTextures[1], _textureShader.get(), _blurShader.get())) {
+	
+		return false;
+	}
+
+	//return PostProcess(1);
+
 	/*
 	if (!UpdateMouseStrings(mouseX, mouseY, mouseDown)) return false;
-
-	if (!_blur->BlurTexture(_direct3D.get(), _camera.get(),
-		&_renderTextures[0], _textureShader.get(), _blurShader.get())) {
-		return false;
-	}
 
 	/**/
 
 	return Render();
 }
 
-bool ApplicationClass::Render()
+bool ApplicationClass::PostProcess(int targetIdx)
 {
-
 	float fogColor = 0.f;
 
 	_direct3D->BeginScene(fogColor, fogColor, fogColor, 1.0f);
 
-	XMMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
+	XMMATRIX worldMatrix, viewMatrix, orthoMatrix;
 
 	_direct3D->GetWorldMatrix(worldMatrix);
-	
+
 	_cameras[0].GetViewMatrix(viewMatrix);
-	_cameras[0].GetProjectionMatrix(projectionMatrix);
 	_direct3D->GetOrthoMatrix(orthoMatrix);
 
 	static float fade = 1.f;
 
-	//_models[0].Render(_direct3D->GetDeviceContext());
 	_fullScreenWindow->Render(_direct3D->GetDeviceContext());
 
 	if (!_textureShader->Render(_direct3D->GetDeviceContext(),
 		_fullScreenWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix,
-		//_textures[0].GetTexture()))
-		_renderTextures[0].GetShaderResourceView()))
+		_renderTextures[targetIdx].GetShaderResourceView()))
 	{
 		return false;
 	}
+
+
+	_direct3D->EndScene();
+
+	return true;
+}
+
+bool ApplicationClass::RenderDepthToTexture()
+{
+	XMMATRIX worldMatrixes[3] = {
+		XMMatrixTranslation(-2.f, 2.f, 0.f),
+		XMMatrixTranslation(2.f, 2.f, 0.f),
+		XMMatrixTranslation(0.f, 1.f, 0.f), };
+
+	for (int i = 0; i < _numLights; i++) {
+
+		_depthTextures[i].SetRenderTarget(_direct3D->GetDeviceContext());
+		_depthTextures[i].ClearRenderTarget(_direct3D->GetDeviceContext(), 0.f, 0.f, 0.f, 1.f);
+
+		XMMATRIX lightViewMatrix, lightProjectionMatrix;
+
+		_lights[i].GetViewMatrix(lightViewMatrix);
+		_lights[i].GetProjectionMatrix(lightProjectionMatrix);
+		
+		for (int j = 0; j < _numModels; j++) {
+
+			_models[j].Render(_direct3D->GetDeviceContext());
+
+			if (!_depthShader->Render(
+				_direct3D->GetDeviceContext(), _models[j].GetIndexCount(),
+				worldMatrixes[j], lightViewMatrix, lightProjectionMatrix)) {
+				return false;
+			}
+
+		}
+		
+	}
+
+	_direct3D->SetBackBufferRenderTarget();
+	_direct3D->ResetViewport();
+
+	return true;
+}
+
+bool ApplicationClass::RenderBlackAndWhilteShadows(int targetIdx)
+{
+
+	_renderTextures[targetIdx].SetRenderTarget(_direct3D->GetDeviceContext());
+	_renderTextures[targetIdx].ClearRenderTarget(_direct3D->GetDeviceContext(), 0.f, 0.f, 0.f, 0.f);
+
+	XMMATRIX viewMatrix, projectionMatrix;
+
+	_cameras[1].GetViewMatrix(viewMatrix);
+	_direct3D->GetProjectionMatrix(projectionMatrix);
+
+	XMMATRIX lightViewMatrix, lightProjectionMatrix;
+
+	_lights[0].GetViewMatrix(lightViewMatrix);
+	_lights[0].GetProjectionMatrix(lightProjectionMatrix);
+
+	XMMATRIX worldMatrixes[3] = {
+		XMMatrixTranslation(-2.f, 2.f, 0.f),
+		XMMatrixTranslation(2.f, 2.f, 0.f),
+		XMMatrixTranslation(0.f, 1.f, 0.f), };
+
+	for (int i = 0; i < _numModels; i++) {
+		_models[i].Render(_direct3D->GetDeviceContext());
+
+		if (!_shadowShader->Render(_direct3D->GetDeviceContext(), _models[i].GetIndexCount(),
+			worldMatrixes[i], viewMatrix, projectionMatrix, lightViewMatrix, lightProjectionMatrix,
+			_textures[i].GetTexture(), _depthTextures[0].GetShaderResourceView(),
+			_lights[0].GetPosition(), 0.0022f)) {
+			return false;
+		}
+
+	}
+
+	_direct3D->SetBackBufferRenderTarget();
+	_direct3D->ResetViewport();
+
+	return true;
+}
+
+bool ApplicationClass::Render()
+{
+
+	_renderTextures[0].SetRenderTarget(_direct3D->GetDeviceContext());
+	_renderTextures[0].ClearRenderTarget(_direct3D->GetDeviceContext(), 0.f, 0.f, 0.f, 1.f);
+
+	XMMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
+	XMMATRIX lightViewMatrix, lightProjectionMatrix;
+	XMMATRIX lightViewMatrix2, lightProjectionMatrix2;
+
+	_direct3D->GetWorldMatrix(worldMatrix);
+	_cameras[1].GetViewMatrix(viewMatrix);
+	_direct3D->GetProjectionMatrix(projectionMatrix);
+
+	_lights[0].GetViewMatrix(lightViewMatrix);
+	_lights[0].GetProjectionMatrix(lightProjectionMatrix);
+	_lights[1].GetViewMatrix(lightViewMatrix2);
+	_lights[1].GetProjectionMatrix(lightProjectionMatrix2);
+
+	XMMATRIX worldMatrixes[3] = {
+		XMMatrixTranslation(-2.f, 2.f, 0.f),
+		XMMatrixTranslation(2.f, 2.f, 0.f),
+		XMMatrixTranslation(0.f, 1.f, 0.f), };
+
+	for (int i = 0; i < _numModels; i++) {
+		_models[i].Render(_direct3D->GetDeviceContext());
+
+		if (!_sShadowShader->Render(_direct3D->GetDeviceContext(), _models[i].GetIndexCount(),
+			worldMatrixes[i], viewMatrix, projectionMatrix, lightViewMatrix, lightProjectionMatrix,
+			_textures[i].GetTexture(), _renderTextures[1].GetShaderResourceView(),
+			_lights[0].GetAmbientColor(), _lights[0].GetDiffuseColor(),
+			_lights[0].GetPosition(), 0.0022f)) {
+			return false;
+		}
+		
+	}
+
+	_direct3D->SetBackBufferRenderTarget();
+	_direct3D->ResetViewport();
+
+	return PostProcess(0);
+
+	/*
+	if (!_shaderManager->RenderTextureShader(_direct3D->GetDeviceContext(), _models[0].GetIndexCount(),
+		worldMatrix, viewMatrix, projectionMatrix, _textures[1].GetTexture())) {
+		return false;
+	}
+
+	/*
+	*/
 
 	/*
 	if (!_blurShader->Render(_direct3D->GetDeviceContext(),
@@ -480,63 +654,6 @@ bool ApplicationClass::Render()
 	}
 
 	_direct3D->DisableAlphaBlending();*/
-
-	_direct3D->EndScene();
-
-	return true;
-}
-
-bool ApplicationClass::RenderSceneToTexture()
-{
-	_renderTextures[0].SetRenderTarget(_direct3D->GetDeviceContext());
-	_renderTextures[0].ClearRenderTarget(_direct3D->GetDeviceContext(), 0.f, 0.f, 0.f, 1.f);
-
-	XMMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
-	XMMATRIX viewMatrix2, projectionMatrix2;
-
-	_direct3D->GetWorldMatrix(worldMatrix);
-	_cameras[1].GetViewMatrix(viewMatrix);
-	_direct3D->GetProjectionMatrix(projectionMatrix);
-
-	_cameras[2].GetViewMatrix(viewMatrix2);
-	_cameras[2].GetProjectionMatrix(projectionMatrix2);
-
-	float brightness = 1.5f;
-
-	_models[0].Render(_direct3D->GetDeviceContext());
-	
-	if (!_projectionShader->Render(_direct3D->GetDeviceContext(), _particleSystem->GetIndexCount(),
-		worldMatrix, viewMatrix, projectionMatrix, viewMatrix2, projectionMatrix2,
-		_textures[0].GetTexture(), _textures[2].GetTexture(),
-		_lights[0].GetAmbientColor(), _lights[0].GetDiffuseColor(),
-		_lights[0].GetPosition(), brightness)) {
-		return false;
-	}
-
-	worldMatrix = XMMatrixTranslation(0.0f, 2.0f, 0.0f);
-
-	_models[1].Render(_direct3D->GetDeviceContext());
-
-	if (!_projectionShader->Render(_direct3D->GetDeviceContext(), _particleSystem->GetIndexCount(),
-		worldMatrix, viewMatrix, projectionMatrix, viewMatrix2, projectionMatrix2,
-		_textures[1].GetTexture(), _textures[2].GetTexture(),
-		_lights[0].GetAmbientColor(), _lights[0].GetDiffuseColor(),
-		_lights[0].GetPosition(), brightness)) {
-		return false;
-	}
-	/*
-	if (!_shaderManager->RenderTextureShader(_direct3D->GetDeviceContext(), _models[0].GetIndexCount(),
-		worldMatrix, viewMatrix, projectionMatrix, _textures[1].GetTexture())) {
-		return false;
-	}
-
-	/*
-	*/
-
-	_direct3D->SetBackBufferRenderTarget();
-	_direct3D->ResetViewport();
-
-	return true;
 }
 
 bool ApplicationClass::RenderRefractionToTexture()

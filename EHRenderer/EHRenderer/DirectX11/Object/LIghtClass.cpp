@@ -10,11 +10,7 @@ LightClass::LightClass(const LightClass&)
 
 LightClass::~LightClass()
 {
-}
 
-void LightClass::SetPosition(float x, float y, float z)
-{
-	_position = XMFLOAT3(x, y, z);
 }
 
 void LightClass::SetDiffuseColor(float red, float green, float blue, float alpha)

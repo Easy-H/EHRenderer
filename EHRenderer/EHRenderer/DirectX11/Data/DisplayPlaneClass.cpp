@@ -1,4 +1,6 @@
 #include "DisplayPlaneClass.hpp"
+#include "../D3DClass.hpp"
+
 #include <memory>
 
 DisplayPlaneClass::DisplayPlaneClass()

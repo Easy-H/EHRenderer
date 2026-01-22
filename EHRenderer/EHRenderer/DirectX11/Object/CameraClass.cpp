@@ -9,6 +9,8 @@ CameraClass::CameraClass()
 	_rotationX = 0.f;
 	_rotationY = 0.f;
 	_rotationZ = 0.f;
+
+	_isOrtho = false;
 }
 
 CameraClass::CameraClass(const CameraClass&)
@@ -46,8 +48,16 @@ void CameraClass::SetLookAt(float x, float y, float z)
 void CameraClass::SetProjectionParameters(
 	float fieldOfView, float aspectRatio, float nearPlane, float farPlane)
 {
+	_isOrtho = false;
 	_projectionMatrix = XMMatrixPerspectiveFovLH(
 		fieldOfView, aspectRatio, nearPlane, farPlane);
+
+}
+
+void CameraClass::SetOrthoParameters(float width, float nearPlane, float depthPlane)
+{
+	_isOrtho = true;
+	_orthMatrix = XMMatrixOrthographicLH(width, width, nearPlane, depthPlane);
 }
 
 void CameraClass::SetRotation(float x, float y, float z)
@@ -102,6 +112,10 @@ void CameraClass::GetViewMatrix(XMMATRIX& viewMatrix)
 }
 
 void CameraClass::GetProjectionMatrix(XMMATRIX& projectionMatrix) {
+	if (_isOrtho) {
+		projectionMatrix = _orthMatrix;
+		return;
+	}
 	projectionMatrix = _projectionMatrix;
 }
 

@@ -1,54 +1,61 @@
-#include "TextureShaderClass.hpp"
+#include "DirectionalLightShadowShaderClass.hpp"
 
 #include <d3dcompiler.h>
 
-TextureShaderClass::TextureShaderClass()
+DirectionalLightShadowShaderClass::DirectionalLightShadowShaderClass()
 {
 }
 
-TextureShaderClass::TextureShaderClass(const TextureShaderClass&)
+DirectionalLightShadowShaderClass::DirectionalLightShadowShaderClass(const DirectionalLightShadowShaderClass&)
 {
 }
 
-TextureShaderClass::~TextureShaderClass()
+DirectionalLightShadowShaderClass::~DirectionalLightShadowShaderClass()
 {
 }
 
 
-bool TextureShaderClass::Initialize(ID3D11Device* device, HWND hwnd)
+bool DirectionalLightShadowShaderClass::Initialize(ID3D11Device* device, HWND hwnd)
 {
 	wchar_t vsFilename[128];
-	if (wcscpy_s(vsFilename, 128, L"./HLSL/Texture/Texture.vs") != 0) return false;
+	if (wcscpy_s(vsFilename, 128, L"./HLSL/Shadow/DirectionalLightShadow.vs") != 0) return false;
 
 	wchar_t psFilename[128];
-	if (wcscpy_s(psFilename, 128, L"./HLSL/Texture/Texture.ps") != 0) return false;
+	if (wcscpy_s(psFilename, 128, L"./HLSL/Shadow/DirectionalLightShadow.ps") != 0) return false;
 
 	return InitializeShader(device, hwnd, vsFilename, psFilename);
 }
 
-void TextureShaderClass::Shutdown() {
+void DirectionalLightShadowShaderClass::Shutdown() {
 	ShutdownShader();
 }
 
-bool TextureShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount,
+bool DirectionalLightShadowShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount,
 	XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix,
-	ID3D11ShaderResourceView* texture)
+	XMMATRIX viewMatrix2, XMMATRIX projectionMatrix2,
+	ID3D11ShaderResourceView* texture, ID3D11ShaderResourceView* depthMapTexture,
+	XMFLOAT4 ambientColor, XMFLOAT4 diffuseColor, XMFLOAT3 lightDirection, float bias)
 {
+
 	if (!SetShaderParameters(deviceContext,
-		worldMatrix, viewMatrix, projectionMatrix, texture)) return false;
+		worldMatrix, viewMatrix, projectionMatrix,
+		viewMatrix2, projectionMatrix2,
+		texture, depthMapTexture,
+		ambientColor, diffuseColor, lightDirection, bias)) return false;
 
 	RenderShader(deviceContext, indexCount);
+
 	return true;
 }
 
-bool TextureShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* vsFilename, WCHAR* psFilename)
+bool DirectionalLightShadowShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* vsFilename, WCHAR* psFilename)
 {
 	ComPtr<ID3D10Blob> errorMessage;
 
 	ComPtr<ID3D10Blob> vertexShaderBuffer;
 
 	if (FAILED(D3DCompileFromFile(vsFilename, nullptr, nullptr,
-		"TextureVertexShader", "vs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0,
+		"DirectionalLightShadowVertexShader", "vs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0,
 		vertexShaderBuffer.GetAddressOf(), errorMessage.GetAddressOf()))) {
 		if (errorMessage) {
 			OutputShaderErrorMessage(errorMessage.Get(), hwnd, vsFilename);
@@ -68,7 +75,7 @@ bool TextureShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR
 	ComPtr<ID3D10Blob> pixelShaderBuffer;
 
 	if (FAILED(D3DCompileFromFile(psFilename, nullptr, nullptr,
-		"TexturePixelShader", "ps_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0,
+		"DirectionalLightShadowPixelShader", "ps_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0,
 		pixelShaderBuffer.GetAddressOf(), errorMessage.GetAddressOf()))) {
 		if (errorMessage) {
 			OutputShaderErrorMessage(errorMessage.Get(), hwnd, psFilename);
@@ -85,7 +92,7 @@ bool TextureShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR
 		return false;
 	}
 
-	D3D11_INPUT_ELEMENT_DESC polygonLayout[2];
+	D3D11_INPUT_ELEMENT_DESC polygonLayout[3];
 
 	polygonLayout[0].SemanticName = "POSITION";
 	polygonLayout[0].SemanticIndex = 0;
@@ -104,6 +111,14 @@ bool TextureShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR
 	polygonLayout[1].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 	polygonLayout[1].InstanceDataStepRate = 0;
 
+	polygonLayout[2].SemanticName = "NORMAL";
+	polygonLayout[2].SemanticIndex = 0;
+	polygonLayout[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+	polygonLayout[2].InputSlot = 0;
+	polygonLayout[2].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
+	polygonLayout[2].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+	polygonLayout[2].InstanceDataStepRate = 0;
+
 	unsigned int numElements = sizeof(polygonLayout) / sizeof(polygonLayout[0]);
 
 	if (FAILED(device->CreateInputLayout(polygonLayout, numElements,
@@ -117,8 +132,18 @@ bool TextureShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR
 		return false;
 	}
 
+	if (!CreateConstantBuffer(device, sizeof(LightBufferType),
+		_lightBuffer.GetAddressOf())) {
+		return false;
+	}
+
+	if (!CreateSamplerState(device, D3D11_TEXTURE_ADDRESS_CLAMP,
+		_sampleStateClamp.GetAddressOf())) {
+		return false;
+	}
+
 	if (!CreateSamplerState(device, D3D11_TEXTURE_ADDRESS_WRAP,
-		_sampleState.GetAddressOf())) {
+		_sampleStateWrap.GetAddressOf())) {
 		return false;
 	}
 
@@ -126,19 +151,25 @@ bool TextureShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR
 
 }
 
-void TextureShaderClass::ShutdownShader()
+void DirectionalLightShadowShaderClass::ShutdownShader()
 {
 }
 
-bool TextureShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext,
+bool DirectionalLightShadowShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext,
 	XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix,
-	ID3D11ShaderResourceView* texture) {
+	XMMATRIX lightViewMatrix, XMMATRIX lightProjectionMatrix,
+	ID3D11ShaderResourceView* texture, ID3D11ShaderResourceView* depthMapTexture,
+	XMFLOAT4 ambientColor, XMFLOAT4 diffuseColor, XMFLOAT3 lightDirection, float bias)
+{
 
 	worldMatrix = XMMatrixTranspose(worldMatrix);
 	viewMatrix = XMMatrixTranspose(viewMatrix);
 	projectionMatrix = XMMatrixTranspose(projectionMatrix);
+	lightViewMatrix = XMMatrixTranspose(lightViewMatrix);
+	lightProjectionMatrix = XMMatrixTranspose(lightProjectionMatrix);
 
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
+
 	if (FAILED(deviceContext->Map(_matrixBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource))) {
 		return false;
 	}
@@ -148,21 +179,44 @@ bool TextureShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext,
 	dataPtr->world = worldMatrix;
 	dataPtr->view = viewMatrix;
 	dataPtr->projection = projectionMatrix;
+	dataPtr->lightView = lightViewMatrix;
+	dataPtr->lightProjection = lightProjectionMatrix;
 
 	deviceContext->Unmap(_matrixBuffer.Get(), 0);
+
 	unsigned int bufferNumber = 0;
 
 	deviceContext->VSSetConstantBuffers(bufferNumber, 1, _matrixBuffer.GetAddressOf());
+
+	if (FAILED(deviceContext->Map(_lightBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource))) {
+		return false;
+	}
+
+	LightBufferType* dataPtr3 = (LightBufferType*)mappedResource.pData;
+
+	dataPtr3->ambientColor = ambientColor;
+	dataPtr3->bias = bias;
+	dataPtr3->diffuseColor = diffuseColor;
+	dataPtr3->lightDirection = lightDirection;
+
+	deviceContext->Unmap(_lightBuffer.Get(), 0);
+
+	deviceContext->PSSetConstantBuffers(0, 1, _lightBuffer.GetAddressOf());
+
 	deviceContext->PSSetShaderResources(0, 1, &texture);
+	deviceContext->PSSetShaderResources(1, 1, &depthMapTexture);
 
 	return true;
 }
 
-void TextureShaderClass::RenderShader(ID3D11DeviceContext* deviceContext, int indexCount) {
+void DirectionalLightShadowShaderClass::RenderShader(ID3D11DeviceContext* deviceContext, int indexCount) {
 	deviceContext->IASetInputLayout(_layout.Get());
+
 	deviceContext->VSSetShader(_vertexShader.Get(), nullptr, 0);
 	deviceContext->PSSetShader(_pixelShader.Get(), nullptr, 0);
 
-	deviceContext->PSSetSamplers(0, 1, _sampleState.GetAddressOf());
+	deviceContext->PSSetSamplers(0, 1, _sampleStateClamp.GetAddressOf());
+	deviceContext->PSSetSamplers(1, 1, _sampleStateWrap.GetAddressOf());
+
 	deviceContext->DrawIndexed(indexCount, 0, 0);
 }

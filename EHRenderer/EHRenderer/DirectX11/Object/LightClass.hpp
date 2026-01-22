@@ -1,10 +1,11 @@
 #pragma once;
 
 #include <directxmath.h>
+#include "CameraClass.hpp"
 
 using namespace DirectX;
 
-class LightClass {
+class LightClass : public CameraClass {
 
 private:
 	XMFLOAT4 _diffuseColor;
@@ -12,21 +13,17 @@ private:
 	XMFLOAT4 _specularColor;
 	float _specularPower;
 	XMFLOAT3 _direction;
-	XMFLOAT3 _position;
+
 public:
 	LightClass();
 	LightClass(const LightClass&);
 	~LightClass();
-
-	void SetPosition(float, float, float);
 
 	void SetDiffuseColor(float, float, float, float);
 	void SetAmbientColor(float, float, float, float);
 	void SetSpecularColor(float, float, float, float);
 	void SetSpecularPower(float);
 	void SetDirection(float, float, float);
-
-	XMFLOAT3 GetPosition() { return _position; }
 
 	XMFLOAT4 GetDiffuseColor() { return _diffuseColor; }
 	XMFLOAT4 GetAmbientColor() { return _ambientColor; }

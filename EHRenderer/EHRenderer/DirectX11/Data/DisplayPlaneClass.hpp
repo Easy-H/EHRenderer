@@ -1,6 +1,11 @@
 #pragma once
 
-#include "D3DClass.hpp"
+#include <d3d11.h>
+#include <directxmath.h>
+#include <wrl.h>
+
+using namespace DirectX;
+using namespace Microsoft::WRL;
 
 class DisplayPlaneClass {
 private:

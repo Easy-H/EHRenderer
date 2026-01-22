@@ -19,14 +19,14 @@ bool MultiTextureShaderClass::Initialize(ID3D11Device* device, HWND hwnd)
 {
 	wchar_t vsFilename[128];
 
-	if (wcscpy_s(vsFilename, 128, L"./HLSL/Multitexture.vs") != 0) {
+	if (wcscpy_s(vsFilename, 128, L"./HLSL/Texture/Multitexture.vs") != 0) {
 		MessageBox(hwnd, "Error", "Error", MB_OK);
 		return false;
 	}
 
 	wchar_t psFilename[128];
 
-	if (wcscpy_s(psFilename, 128, L"./HLSL/Multitexture.ps") != 0) {
+	if (wcscpy_s(psFilename, 128, L"./HLSL/Texture/Multitexture.ps") != 0) {
 		MessageBox(hwnd, "Error", "Error", MB_OK);
 		return false;
 	}

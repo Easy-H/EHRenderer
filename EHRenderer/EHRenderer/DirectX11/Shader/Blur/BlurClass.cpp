@@ -3,9 +3,9 @@
 #include "BlurShaderClass.hpp"
 
 #include "../../D3DClass.hpp"
-#include "../../CameraClass.hpp"
-#include "../../RenderTextureClass.hpp"
-#include "../../OrthoWindowClass.hpp"
+#include "../../Object/CameraClass.hpp"
+#include "../../Data/RenderTextureClass.hpp"
+#include "../../Data/OrthoWindowClass.hpp"
 #include "../Texture/TextureshaderClass.hpp"
 
 BlurClass::BlurClass()
@@ -103,9 +103,9 @@ bool BlurClass::BlurTexture(D3DClass* Direct3D, CameraClass* Camera, RenderTextu
 
 	_downSampleWindow->Render(Direct3D->GetDeviceContext());
 
-	result = BlurShader->Render(Direct3D->GetDeviceContext(), _downSampleWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, _downSampleTexture1->GetShaderResourceView(),
-		_downSampleWidth, _downSampleHeight, blurType);
-	if (!result)
+	if (!BlurShader->Render(Direct3D->GetDeviceContext(), _downSampleWindow->GetIndexCount(),
+		worldMatrix, viewMatrix, orthoMatrix, _downSampleTexture1->GetShaderResourceView(),
+		_downSampleWidth, _downSampleHeight, blurType))
 	{
 		return false;
 	}
@@ -123,9 +123,9 @@ bool BlurClass::BlurTexture(D3DClass* Direct3D, CameraClass* Camera, RenderTextu
 
 	_downSampleWindow->Render(Direct3D->GetDeviceContext());
 
-	result = BlurShader->Render(Direct3D->GetDeviceContext(), _downSampleWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, _downSampleTexture2->GetShaderResourceView(),
-		_downSampleWidth, _downSampleHeight, blurType);
-	if (!result)
+	if (!BlurShader->Render(Direct3D->GetDeviceContext(), _downSampleWindow->GetIndexCount(),
+		worldMatrix, viewMatrix, orthoMatrix, _downSampleTexture2->GetShaderResourceView(),
+		_downSampleWidth, _downSampleHeight, blurType))
 	{
 		return false;
 	}
@@ -140,8 +140,8 @@ bool BlurClass::BlurTexture(D3DClass* Direct3D, CameraClass* Camera, RenderTextu
 
 	_upSampleWindow->Render(Direct3D->GetDeviceContext());
 
-	result = TextureShader->Render(Direct3D->GetDeviceContext(), _upSampleWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, _downSampleTexture1->GetShaderResourceView());
-	if (!result)
+	if (!TextureShader->Render(Direct3D->GetDeviceContext(), _upSampleWindow->GetIndexCount(),
+		worldMatrix, viewMatrix, orthoMatrix, _downSampleTexture1->GetShaderResourceView()))
 	{
 		return false;
 	}

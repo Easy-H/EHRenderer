@@ -2,13 +2,15 @@
 #include <memory>
 #include <directxmath.h>
 
+#include "DirectX11/D3DClass.hpp"
+
 using namespace std;
 using namespace DirectX;
 
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
-const float SCREEN_DEPTH = 1000.0f;
-const float SCREEN_NEAR = 0.3f;
+const float SCREEN_DEPTH = 100.0f;
+const float SCREEN_NEAR = 1.f;
 
 class D3DClass;
 class CameraClass;
@@ -35,6 +37,10 @@ class FireShaderClass;
 class DepthShaderClass;
 class FadeShaderClass;
 class ProjectionShaderClass;
+class ShadowShaderClass;
+class MultiLightShadowShaderClass;
+class DirectionalLightShadowShaderClass;
+class SoftShadowShaderClass;
 
 class LightClass;
 class FontClass;
@@ -93,6 +99,10 @@ private:
 	std::unique_ptr<DepthShaderClass> _depthShader;
 	std::unique_ptr<FadeShaderClass> _fadeShader;
 	std::unique_ptr<ProjectionShaderClass> _projectionShader;
+	std::unique_ptr<ShadowShaderClass> _shadowShader;
+	std::unique_ptr<MultiLightShadowShaderClass> _mShadowShader;
+	std::unique_ptr<DirectionalLightShadowShaderClass> _dShadowShader;
+	std::unique_ptr<SoftShadowShaderClass> _sShadowShader;
 
 	std::unique_ptr<TextureClass[]> _textures;
 	
@@ -110,6 +120,7 @@ private:
 	std::unique_ptr<ModelListClass> _modelList;
 	
 	std::unique_ptr<RenderTextureClass[]> _renderTextures;
+	std::unique_ptr<RenderTextureClass[]> _depthTextures;
 	std::unique_ptr<DisplayPlaneClass> _displayPlane;
 
 	std::unique_ptr<OrthoWindowClass> _fullScreenWindow;
@@ -118,6 +129,7 @@ private:
 	
 	int _numLights;
 	int _stringCount;
+	int _numModels;
 
 	float _waterHeight;
 	float _waterTranslation;
@@ -134,11 +146,27 @@ public:
 	bool Frame(InputClass&);
 
 private:
+	bool PostProcess(int targetIdx);
 	bool Render();
+	bool RenderDepthToTexture();
+	bool RenderBlackAndWhilteShadows(int targetIdx);
 	bool RenderRefractionToTexture();
 	bool RenderReflectionToTexture();
-	bool RenderSceneToTexture();
+
+	template <typename T>
+	bool CreateShader(HWND, std::unique_ptr<T>&);
 
 	bool UpdateMouseStrings(int, int, bool);
 	bool UpdateRenderCountString(int);
 };
+
+template<typename T>
+bool ApplicationClass::CreateShader(HWND hwnd, std::unique_ptr<T>& ptr)
+{
+	ptr = make_unique<T>();
+	if (!ptr->Initialize(_direct3D->GetDevice(), hwnd)) {
+		MessageBox(hwnd, "Error", "Error", MB_OK);
+		return false;
+	}
+	return true;
+}

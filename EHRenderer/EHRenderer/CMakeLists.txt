@@ -4,11 +4,19 @@
 
 # 이 프로젝트의 실행 파일에 소스를 추가합니다.
 add_executable (EHRenderer WIN32
-	"main.cpp" "EHRenderer.h" "SystemClass.cpp" "SimpleInputClass.cpp" "ApplicationClass.cpp" 
-	"DirectX11/D3DClass.cpp" "DirectX11/CameraClass.cpp"
+	"main.cpp" "EHRenderer.h" "SystemClass.cpp" "SimpleInputClass.cpp" "ApplicationClass.cpp" "TimerClass.cpp"
+	
+	"DirectX11/D3DClass.cpp"
+	
+	"DirectX11/Object/CameraClass.cpp"
+	"DirectX11/Object/LightClass.cpp" 
 	
 	"DirectX11/Data/SimpleModelClass.cpp" 
 	"DirectX11/Data/ModelClass.cpp"
+
+	"DirectX11/Data/TextureClass.cpp"
+	"DirectX11/Data/SpriteClass.cpp" 
+	"DirectX11/Data/FontClass.cpp" "DirectX11/Data/TextClass.cpp"
 	
 	"DirectX11/Shader/Color/ColorShaderClass.cpp"
 	"DirectX11/Shader/Particle/ParticleShaderClass.cpp"
@@ -16,14 +24,10 @@ add_executable (EHRenderer WIN32
 	"DirectX11/Shader/Light/LightShaderClass.cpp"
 	"DirectX11/Shader/Font/FontShaderClass.cpp"
 	
-	"DirectX11/Data/TextureClass.cpp"
-	"DirectX11/Shader/LIghtClass.cpp" "DirectX11/Data/SpriteClass.cpp" "TimerClass.cpp"
-	
-	"DirectX11/Data/FontClass.cpp" "DirectX11/Data/TextClass.cpp"
 	"DirectX11/Shader/ShaderBase.cpp" "DirectX11/InputClass.cpp"
 	"DirectX11/Shader/Projection/ProjectionShaderClass.cpp"
 	"DirectX11/Shader/Texture/TextureShaderClass.cpp"
-	"DirectX11/Shader/MultiTexture/MultiTextureShaderClass.cpp"
+	"DirectX11/Shader/Texture/MultiTextureShaderClass.cpp"
 	"DirectX11/Shader/LightMap/LightMapShaderClass.cpp"
 	"DirectX11/Shader/AlphaMap/AlphaMapShaderClass.cpp"
 	"DirectX11/Shader/NormalMap/NormalMapShaderClass.cpp"
@@ -32,8 +36,8 @@ add_executable (EHRenderer WIN32
 	"DirectX11/FrustumClass.cpp"
 	"DirectX11/ModelListClass.cpp"
 	"DirectX11/PositionClass.cpp"
-	"DirectX11/RenderTextureClass.cpp"
-	"DirectX11/DisplayPlaneClass.cpp" 
+	"DirectX11/Data/RenderTextureClass.cpp"
+	"DirectX11/Data/DisplayPlaneClass.cpp" 
 	"DirectX11/Shader/Fog/FogShaderClass.cpp"
 	"DirectX11/Shader/ClipPlane/ClipPlaneShaderClass.cpp"
 	"DirectX11/Shader/Translate/TranslateShaderClass.cpp"
@@ -46,11 +50,15 @@ add_executable (EHRenderer WIN32
 	"DirectX11/Shader/Depth/DepthShaderClass.cpp"
 	"DirectX11/Shader/Blur/BlurShaderClass.cpp"
 	"DirectX11/Shader/Blur/BlurClass.cpp"
-	"DirectX11/OrthoWindowClass.cpp"
+	"DirectX11/Data/OrthoWindowClass.cpp"
 	"DirectX11/Shader/Fade/FadeShaderClass.cpp"
 	"DirectX11/Shader/Particle/ParticleShaderClass.cpp"
 	"DirectX11/Shader/Particle/ParticleSystemClass.cpp"
-	"DirectX11/Shader/Projection/ProjectionShaderClass.cpp")
+	"DirectX11/Shader/Projection/ProjectionShaderClass.cpp"
+	"DirectX11/Shader/Shadow/ShadowShaderClass.cpp"
+	"DirectX11/Shader/Shadow/MultiLightShadowShaderClass.cpp"
+	"DirectX11/Shader/Shadow/DirectionalLightShadowShaderClass.cpp"
+	"DirectX11/Shader/Shadow/SoftShadowShaderClass.cpp")
 	
 
 # target_link_libraries (EHRenderer PUBLIC "wrl.lib")
