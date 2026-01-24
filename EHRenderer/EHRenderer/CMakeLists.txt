@@ -58,7 +58,9 @@ add_executable (EHRenderer WIN32
 	"DirectX11/Shader/Shadow/ShadowShaderClass.cpp"
 	"DirectX11/Shader/Shadow/MultiLightShadowShaderClass.cpp"
 	"DirectX11/Shader/Shadow/DirectionalLightShadowShaderClass.cpp"
-	"DirectX11/Shader/Shadow/SoftShadowShaderClass.cpp")
+	"DirectX11/Shader/Shadow/SoftShadowShaderClass.cpp"
+	"DirectX11/Shader/Depth/TransparentDepthShaderClass.cpp"
+	"DirectX11/Shader/Glow/GlowShaderClass.cpp")
 	
 
 # target_link_libraries (EHRenderer PUBLIC "wrl.lib")

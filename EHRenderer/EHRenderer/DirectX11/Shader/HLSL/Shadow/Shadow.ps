@@ -26,6 +26,12 @@ float4 ShadowPixelShader(PixelInputType input) : SV_TARGET {
 	float lightIntensity;
 	float4 textureColor;
 
+	textureColor = shaderTexture.Sample(SampleTypeWrap, input.tex);
+
+	if (textureColor.w < 0.2f) {
+		discard;
+	}
+
 	color = float4(0.f, 0.f, 0.f, 1.f);
 
 	projectTexCoord.x = input.lightViewPosition.x / input.lightViewPosition.w / 2.f + 0.5f;
@@ -38,11 +44,7 @@ float4 ShadowPixelShader(PixelInputType input) : SV_TARGET {
 		lightDepthValue = lightDepthValue - bias;
 
 		if (lightDepthValue < depthValue) {
-			lightIntensity = saturate(dot(input.normal, input.lightPos));
-
-			if (lightIntensity > 0.f) {
-				color = float4(1.f, 1.f, 1.f, 1.f);
-			}
+			color = float4(1.f, 1.f, 1.f, 1.f);
 		}
 	}
 

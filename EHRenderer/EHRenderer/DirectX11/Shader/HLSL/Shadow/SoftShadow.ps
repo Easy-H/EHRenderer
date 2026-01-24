@@ -27,26 +27,28 @@ float4 SoftShadowPixelShader(PixelInputType input) : SV_TARGET {
 	float2 projectTexCoord;
 	float shadowValue;
 
-	color = ambientColor;
-
-	lightIntensity = saturate(dot(input.normal, input.lightPos));
-
-	if (lightIntensity > 0.f) {
-		color += (diffuseColor * lightIntensity);
-		color = saturate(color);
-	}
-
 	textureColor = shaderTexture.Sample(SampleTypeWrap, input.tex);
 
-	color = color * textureColor;
+	if (textureColor.w < 0.01f) {
+		discard;
+	}
+
+	color = ambientColor;
 
 	projectTexCoord.x = input.viewPosition.x / input.viewPosition.w / 2.f + 0.5f;
 	projectTexCoord.y = -input.viewPosition.y / input.viewPosition.w / 2.f + 0.5f;
 	
 	shadowValue = shadowTexture.Sample(SampleTypeClamp, projectTexCoord).r;
 
-	color = color * shadowValue;
+	lightIntensity = saturate(dot(input.normal, input.lightPos));
 
+	if (lightIntensity > 0.f) {
+		color += (diffuseColor * lightIntensity * shadowValue);
+		color = saturate(color);
+	}
+
+	color = color * textureColor;
+	
 	return color;
 
 }

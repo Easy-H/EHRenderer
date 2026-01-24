@@ -34,13 +34,16 @@ class WaterShaderClass;
 class RefractionShaderClass;
 class GlassShaderClass;
 class FireShaderClass;
-class DepthShaderClass;
 class FadeShaderClass;
 class ProjectionShaderClass;
 class ShadowShaderClass;
 class MultiLightShadowShaderClass;
 class DirectionalLightShadowShaderClass;
 class SoftShadowShaderClass;
+class GlowShaderClass;
+
+class DepthShaderClass;
+class TransparentDepthShaderClass;
 
 class LightClass;
 class FontClass;
@@ -96,13 +99,17 @@ private:
 	std::unique_ptr<RefractionShaderClass> _refractionShader;
 	std::unique_ptr<GlassShaderClass> _glassShader;
 	std::unique_ptr<FireShaderClass> _fireShader;
-	std::unique_ptr<DepthShaderClass> _depthShader;
 	std::unique_ptr<FadeShaderClass> _fadeShader;
 	std::unique_ptr<ProjectionShaderClass> _projectionShader;
+	std::unique_ptr<GlowShaderClass> _glowShader;
+
 	std::unique_ptr<ShadowShaderClass> _shadowShader;
 	std::unique_ptr<MultiLightShadowShaderClass> _mShadowShader;
 	std::unique_ptr<DirectionalLightShadowShaderClass> _dShadowShader;
 	std::unique_ptr<SoftShadowShaderClass> _sShadowShader;
+
+	std::unique_ptr<DepthShaderClass> _depthShader;
+	std::unique_ptr<TransparentDepthShaderClass> _transparentDepthShader;
 
 	std::unique_ptr<TextureClass[]> _textures;
 	
@@ -148,6 +155,8 @@ public:
 private:
 	bool PostProcess(int targetIdx);
 	bool Render();
+	bool RenderSceneToTexture(int);
+	bool RenderGlowToTexture(int);
 	bool RenderDepthToTexture();
 	bool RenderBlackAndWhilteShadows(int targetIdx);
 	bool RenderRefractionToTexture();
