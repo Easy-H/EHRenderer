@@ -1,43 +1,36 @@
 #define NUM_LIGHTS 4
 
-Texture2D shaderTexture: register(t0);
+Texture2D colorTexture: register(t0);
+Texture2D normalTexture : register(t1);
+
 SamplerState SampleType: register(s0);
 
 cbuffer LightBuffer{
-	float4 diffuseColor[NUM_LIGHTS];
+	float3 lightDirection;
+	float padding;
 };
 
 struct PixelInputType {
 	float4 position: SV_POSITION;
 	float2 tex: TEXCOORD0;
-	float3 normal: NORMAL;
-	float3 lightPos[NUM_LIGHTS]: TEXCOORD1;
 };
 
-float4 LightPixelShader(PixelInputType input): SV_TARGET{
-	float4 textureColor;
-	float lightIntensity[NUM_LIGHTS];
-	float4 colorArray[NUM_LIGHTS];
-	float4 colorSum;
-	float4 color;
+float4 LightPixelShader(PixelInputType input): SV_TARGET {
 
-	textureColor = shaderTexture.Sample(SampleType, input.tex);
-	
-	for (int i = 0; i < NUM_LIGHTS; i++) {
-		lightIntensity[i] = saturate(dot(input.normal, input.lightPos[i]));
-		colorArray[i] = diffuseColor[i] * lightIntensity[i];
-	}
+	float4 colors;
+	float4 normals;
+	float3 lightDir;
+	float lightIntensity;
+	float4 outputColor;
 
-	colorSum = float4(0.0f, 0.0f, 0.0f, 1.0f);
+	colors = colorTexture.Sample(SampleType, input.tex);
 
-	for (int i = 0; i < NUM_LIGHTS; i++) {
-		colorSum.r += colorArray[i].r;
-		colorSum.g += colorArray[i].g;
-		colorSum.b += colorArray[i].b;
-		colorSum.a += colorArray[i].a;
-	}
+	normals = normalTexture.Sample(SampleType, input.tex);
 
-	color = saturate(colorSum) * textureColor;
+	lightDir = -lightDirection;
+	lightIntensity = saturate(dot(normals.xyz, lightDir));
 
-	return color;
+	outputColor = saturate(colors * lightIntensity);
+
+	return outputColor;
 }

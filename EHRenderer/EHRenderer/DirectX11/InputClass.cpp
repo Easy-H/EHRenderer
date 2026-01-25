@@ -21,6 +21,7 @@ InputClass::~InputClass()
 
 bool InputClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidth , int screenHeight)
 {
+	_hwnd = hwnd;
 
 	_screenWidth = screenWidth;
 	_screenHeight = screenHeight;
@@ -102,6 +103,14 @@ bool InputClass::ReadMouse()
 
 void InputClass::ProcessInput()
 {
+	POINT p;
+	GetCursorPos(&p);
+	ScreenToClient(_hwnd, &p);
+	_mouseX = p.x;
+	_mouseY = p.y;
+
+	return;
+
 	_mouseX += _mouseState.lX;
 	_mouseY += _mouseState.lY;
 

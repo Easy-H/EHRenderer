@@ -1,50 +1,47 @@
-#include "LightShaderClass.hpp"
+#include "DeferredShaderClass.hpp"
+
 #include <d3dcompiler.h>
-#include <fstream>
 
-LightShaderClass::LightShaderClass()
+DeferredShaderClass::DeferredShaderClass()
 {
 }
 
-LightShaderClass::LightShaderClass(const LightShaderClass&)
+DeferredShaderClass::DeferredShaderClass(const DeferredShaderClass&)
 {
 }
 
-LightShaderClass::~LightShaderClass()
+DeferredShaderClass::~DeferredShaderClass()
 {
 }
 
-bool LightShaderClass::Initialize(ID3D11Device* device, HWND hwnd)
+bool DeferredShaderClass::Initialize(ID3D11Device* device, HWND hwnd)
 {
 	wchar_t vsFilename[128];
-	if (wcscpy_s(vsFilename, 128, L"./HLSL/Light.vs") != 0) return false;
+	if (wcscpy_s(vsFilename, 128, L"./HLSL/Deferred.vs") != 0) return false;
 
 	wchar_t psFilename[128];
-	if (wcscpy_s(psFilename, 128, L"./HLSL/Light.ps") != 0) return false;
+	if (wcscpy_s(psFilename, 128, L"./HLSL/Deferred.ps") != 0) return false;
 
 	return InitializeShader(device, hwnd, vsFilename, psFilename);
 }
 
-bool LightShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount,
-	XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix,
-	ID3D11ShaderResourceView* colorTexture, ID3D11ShaderResourceView* normalTexture, XMFLOAT3 lightDirection)
+bool DeferredShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount,
+	XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix, ID3D11ShaderResourceView* texture)
 {
-	if (!SetShaderParameters(deviceContext,
-		worldMatrix, viewMatrix, projectionMatrix,
-		colorTexture, normalTexture, lightDirection)) return false;
-
+	if (!SetShaderParameters(deviceContext, worldMatrix, viewMatrix, projectionMatrix, texture)) return false;
+	
 	RenderShader(deviceContext, indexCount);
 	return true;
 }
 
-bool LightShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* vsFilename, WCHAR* psFilename)
+bool DeferredShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* vsFilename, WCHAR* psFilename)
 {
 	ComPtr<ID3D10Blob> errorMessage;
 
 	ComPtr<ID3D10Blob> vertexShaderBuffer;
 
-	if (FAILED(D3DCompileFromFile(vsFilename, nullptr, nullptr,
-		"LightVertexShader", "vs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0,
+	if (FAILED(D3DCompileFromFile(vsFilename, nullptr, nullptr, "DeferredVertexShader", "vs_5_0",
+		D3D10_SHADER_ENABLE_STRICTNESS, 0, 
 		vertexShaderBuffer.GetAddressOf(), errorMessage.GetAddressOf()))) {
 		if (errorMessage) {
 			OutputShaderErrorMessage(errorMessage.Get(), hwnd, vsFilename);
@@ -55,15 +52,10 @@ bool LightShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* 
 		return false;
 	}
 
-	if (FAILED(device->CreateVertexShader(vertexShaderBuffer->GetBufferPointer(),
-		vertexShaderBuffer->GetBufferSize(), nullptr, _vertexShader.GetAddressOf()))) {
-		return false;
-	}
-
 	ComPtr<ID3D10Blob> pixelShaderBuffer;
 
-	if (FAILED(D3DCompileFromFile(psFilename, nullptr, nullptr,
-		"LightPixelShader", "ps_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0,
+	if (FAILED(D3DCompileFromFile(psFilename, nullptr, nullptr, "DeferredPixelShader", "ps_5_0",
+		D3D10_SHADER_ENABLE_STRICTNESS, 0,
 		pixelShaderBuffer.GetAddressOf(), errorMessage.GetAddressOf()))) {
 		if (errorMessage) {
 			OutputShaderErrorMessage(errorMessage.Get(), hwnd, psFilename);
@@ -71,6 +63,11 @@ bool LightShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* 
 		else {
 			MessageBoxW(hwnd, psFilename, L"Missing Shader File", MB_OK);
 		}
+		return false;
+	}
+
+	if (FAILED(device->CreateVertexShader(vertexShaderBuffer->GetBufferPointer(),
+		vertexShaderBuffer->GetBufferSize(), nullptr, _vertexShader.GetAddressOf()))) {
 		return false;
 	}
 
@@ -117,11 +114,6 @@ bool LightShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* 
 		return false;
 	}
 
-	if (!CreateConstantBuffer(device, sizeof(LightBufferType),
-		_lightBuffer.GetAddressOf())) {
-		return false;
-	}
-
 	if (!CreateSamplerState(device, D3D11_TEXTURE_ADDRESS_WRAP,
 		_sampleState.GetAddressOf())) {
 		return false;
@@ -130,9 +122,8 @@ bool LightShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* 
 	return true;
 }
 
-bool LightShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext,
-	XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix,
-	ID3D11ShaderResourceView* colorTexture, ID3D11ShaderResourceView* normalTexture, XMFLOAT3 lightDirection)
+bool DeferredShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext,
+	XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix, ID3D11ShaderResourceView* texture)
 {
 
 	worldMatrix = XMMatrixTranspose(worldMatrix);
@@ -144,43 +135,26 @@ bool LightShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext,
 		return false;
 	}
 
-	MatrixBufferType* dataPtr1 = (MatrixBufferType*)mappedResource.pData;
+	MatrixBufferType* dataPtr = (MatrixBufferType*)mappedResource.pData;
 
-	dataPtr1->world = worldMatrix;
-	dataPtr1->view = viewMatrix;
-	dataPtr1->projection = projectionMatrix;
+	dataPtr->world = worldMatrix;
+	dataPtr->view = viewMatrix;
+	dataPtr->projection = projectionMatrix;
 	deviceContext->Unmap(_matrixBuffer.Get(), 0);
 
 	unsigned int bufferNumber = 0;
 	deviceContext->VSSetConstantBuffers(bufferNumber, 1, _matrixBuffer.GetAddressOf());
-
-	if (FAILED(deviceContext->Map(_lightBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource))) {
-		return false;
-	}
-
-	LightBufferType* dataPtr2 = (LightBufferType*)mappedResource.pData;
-
-	dataPtr2->lightDirection = lightDirection;
-	dataPtr2->padding = 0;
-	deviceContext->Unmap(_lightBuffer.Get(), 0);
-
-	bufferNumber = 0;
-	deviceContext->PSSetConstantBuffers(bufferNumber, 1, _lightBuffer.GetAddressOf());
-
-	deviceContext->PSSetShaderResources(0, 1, &colorTexture);
-	deviceContext->PSSetShaderResources(1, 1, &normalTexture);
+	deviceContext->PSSetShaderResources(0, 1, &texture);
 
 	return true;
 }
 
-void LightShaderClass::RenderShader(ID3D11DeviceContext* deviceContext, int indexCount)
+void DeferredShaderClass::RenderShader(ID3D11DeviceContext* deviceContext, int indexCount)
 {
 	deviceContext->IASetInputLayout(_layout.Get());
-
+	
 	deviceContext->VSSetShader(_vertexShader.Get(), nullptr, 0);
 	deviceContext->PSSetShader(_pixelShader.Get(), nullptr, 0);
-
-	deviceContext->PSSetSamplers(0, 1, _sampleState.GetAddressOf());
 
 	deviceContext->DrawIndexed(indexCount, 0, 0);
 

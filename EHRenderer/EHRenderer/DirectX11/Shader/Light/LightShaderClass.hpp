@@ -18,11 +18,9 @@ private:
 		XMMATRIX view;
 		XMMATRIX projection;
 	};
-	struct LightColorBufferType {
-		XMFLOAT4 diffuseColor[NUM_LIGHTS];
-	};
-	struct LightPositionBufferType {
-		XMFLOAT4 lightPosition[NUM_LIGHTS];
+	struct LightBufferType {
+		XMFLOAT3 lightDirection;
+		float padding;
 	};
 
 public:
@@ -31,11 +29,13 @@ public:
 	~LightShaderClass();
 	
 	bool Initialize(ID3D11Device*, HWND);
-	bool Render(ID3D11DeviceContext*, int, XMMATRIX, XMMATRIX, XMMATRIX, ID3D11ShaderResourceView*, XMFLOAT4[], XMFLOAT4[]);
+	bool Render(ID3D11DeviceContext*, int, XMMATRIX, XMMATRIX, XMMATRIX,
+		ID3D11ShaderResourceView*, ID3D11ShaderResourceView*, XMFLOAT3);
 private:
 	bool InitializeShader(ID3D11Device*, HWND, WCHAR*, WCHAR*);
 	
-	bool SetShaderParameters(ID3D11DeviceContext*, XMMATRIX, XMMATRIX, XMMATRIX, ID3D11ShaderResourceView*, XMFLOAT4[], XMFLOAT4[]);
+	bool SetShaderParameters(ID3D11DeviceContext*, XMMATRIX, XMMATRIX, XMMATRIX,
+		ID3D11ShaderResourceView*, ID3D11ShaderResourceView*, XMFLOAT3); 
 	void RenderShader(ID3D11DeviceContext*, int);
 
 	ComPtr<ID3D11VertexShader> _vertexShader;
@@ -44,7 +44,6 @@ private:
 	ComPtr<ID3D11SamplerState> _sampleState;
 	ComPtr<ID3D11Buffer> _matrixBuffer;
 
-	ComPtr<ID3D11Buffer> _lightColorBuffer;
-	ComPtr<ID3D11Buffer> _lightPositionBuffer;
+	ComPtr<ID3D11Buffer> _lightBuffer;
 
 };

@@ -39,5 +39,7 @@ private:
 	int _screenHeight;
 	int _mouseX;
 	int _mouseY;
+
+	HWND _hwnd;
 	
 };

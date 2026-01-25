@@ -15,6 +15,9 @@
 #include "DirectX11/Data/SpriteClass.hpp"
 #include "DirectX11/Data/FontClass.hpp"
 #include "DirectX11/Data/TextClass.hpp"
+#include "DirectX11/Data/DeferredBuffersClass.hpp"
+
+#include "DirectX11/Shader/Deferred/DeferredShaderClass.hpp"
 
 #include "DirectX11/ShaderManager.hpp"
 #include "DirectX11/Shader/Color/ColorShaderClass.hpp"
@@ -80,14 +83,17 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	_cameras[0].SetPosition(0.f, 0.f, -10.f);
 	_cameras[0].GetViewMatrix(_baseViewMatrix);
 
+	float aspectRatio = (float)screenWidth / (float)screenHeight;
 	_cameras[1].SetPosition(0.f, 0.f, -10.f);
 	_cameras[1].SetRotation(30.f, 0.f, 0.f);
-	_cameras[1].SetProjectionParameters(3.141592 / 2.f, 1.f, SCREEN_DEPTH, SCREEN_NEAR);
+	_cameras[1].SetProjectionParameters(3.141592 / 2.f, aspectRatio, SCREEN_DEPTH, SCREEN_NEAR);
 
 	_cameras[2].SetPosition(2.f, 5.f, -2.f);
 	_cameras[2].SetLookAt(0.f, 0.f, 0.f);
 	_cameras[2].SetProjectionParameters(3.141592 / 2.f, 1.f, 1.f, 100.f);
 
+	_screenWidth = screenWidth;
+	_screenHeight = screenHeight;
 
 	_numModels = 3;
 	_models = std::make_unique<ModelClass[]>(_numModels);
@@ -136,7 +142,9 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	_lights[0].SetDiffuseColor(1.0f, 1.f, 1.f, 1.f);
 	_lights[0].SetPosition(5.f, 8.f, -5.f);
 	_lights[0].SetOrthoParameters(20.f, 1.f, 50.f);
-	//_lights[0].SetProjectionParameters(3.141592 / 2.f, 1.f, SCREEN_NEAR, SCREEN_DEPTH);
+	_lights[0].SetLookAt(0, 0, 0);
+	_lights[0].SetProjectionParameters(3.141592 / 2.f, 1.f, SCREEN_NEAR, SCREEN_DEPTH);
+	_lights[0].SetDirection(1.0f, -1.0f, 0.2f);
 
 	_lights[1].SetAmbientColor(0.15f, 0.15f, 0.15f, 1.f);
 	_lights[1].SetDiffuseColor(1.0f, 1.f, 1.f, 1.f);
@@ -166,6 +174,20 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	_shaderManager = make_unique<ShaderManagerClass>();
 
 	if (!_shaderManager->Initialize(_direct3D->GetDevice(), hwnd)) {
+		return false;
+	}
+
+	_deferredBuffers = make_unique<DeferredBuffersClass>();
+	if (!_deferredBuffers->Initialize(_direct3D->GetDevice(), screenWidth, screenHeight, SCREEN_DEPTH, SCREEN_NEAR)) {
+		MessageBox(hwnd, "Error", "Error", MB_OK);
+		return false;
+	}
+
+	if (!CreateShader<DeferredShaderClass>(hwnd, _deferredShader)) {
+		return false;
+	}
+
+	if (!CreateShader<LightShaderClass>(hwnd, _lightShader)) {
 		return false;
 	}
 
@@ -390,6 +412,7 @@ bool ApplicationClass::Frame(InputClass& input)
 
 	// Update the angle of the light each frame.
 	lightAngle -= 0.03f * frameTime;
+
 	if (lightAngle < 90.0f)
 	{
 		lightAngle = 270.0f;
@@ -397,18 +420,41 @@ bool ApplicationClass::Frame(InputClass& input)
 		// Reset the light position also.
 		lightPosX = 9.0f;
 	}
+
 	float radians = lightAngle * 0.0174532925f;
 
+	/*
 	// Update the direction of the light.
 	_lights[0].SetDirection(sinf(radians), cosf(radians), 0.0f);
 	
 	// Set the position and lookat for the light.
 	_lights[0].SetPosition(lightPosX, 8.0f, -0.1f);
-	_lights[0].SetLookAt(-lightPosX, 0.0f, 0.0f);
+	_lights[0].SetLookAt(-lightPosX, 0.0f, 0.0f);*/
+
+	input.GetMouseLocation(mouseX, mouseY);
+
+	char testString[32];
+
+	if (TestIntersection(mouseX, mouseY)) {
+		strcpy_s(testString, "Intersection: YES");
+	}
+	else
+	{
+		strcpy_s(testString, "Intersection: NO");
+	}
+
+	if (!UpdateMouseStrings(mouseX, mouseY, mouseDown)) return false;
+
+	if (!_textStrings[2].UpdateText(_direct3D->GetDeviceContext(), _font.get(),
+		testString, 10, 30, 0.f, 1.f, 0.f)) {
+		return false;
+	}
 
 	if (!RenderSceneToTexture(1)) {
 		return false;
 	}
+
+	return Render();
 
 	if (!RenderGlowToTexture(2)) {
 		return false;
@@ -421,8 +467,6 @@ bool ApplicationClass::Frame(InputClass& input)
 	}
 
 	//return PostProcess(2);
-
-	return Render();
 
 	if (!RenderDepthToTexture()) {
 		return false;
@@ -597,30 +641,62 @@ bool ApplicationClass::RenderBlackAndWhilteShadows(int targetIdx)
 
 bool ApplicationClass::Render()
 {
-
 	XMMATRIX worldMatrix, viewMatrix, projectionMatrix;
+	XMMATRIX baseViewMatrix, orthoMatrix;
 
 	_direct3D->BeginScene(0.f, 0.5f, 0.8f, 1.f);
 
 	_direct3D->GetWorldMatrix(worldMatrix);
-	_cameras[0].GetViewMatrix(viewMatrix);
-	_direct3D->GetOrthoMatrix(projectionMatrix);
+	_cameras[1].GetViewMatrix(viewMatrix);
+	_cameras[0].GetViewMatrix(baseViewMatrix);
+	_direct3D->GetProjectionMatrix(projectionMatrix);
+	_direct3D->GetOrthoMatrix(orthoMatrix);
 
 	_direct3D->TurnZBufferOff();
-
-	float glowValue = 2.f;
-
 	_fullScreenWindow->Render(_direct3D->GetDeviceContext());
 
-	if (!_glowShader->Render(_direct3D->GetDeviceContext(),
-		_fullScreenWindow->GetIndexCount(),
-		worldMatrix, viewMatrix, projectionMatrix,
-		_renderTextures[1].GetShaderResourceView(),
-		_renderTextures[2].GetShaderResourceView(), glowValue)) {
+	/*
+	if (!_textureShader->Render(_direct3D->GetDeviceContext(), _fullScreenWindow->GetIndexCount(),
+		worldMatrix, baseViewMatrix, projectionMatrix, _deferredBuffers->GetShaderResourceView(0))) {
+		return false;
+	}
+	*/
+
+	if (!_lightShader->Render(_direct3D->GetDeviceContext(), _fullScreenWindow->GetIndexCount(),
+		worldMatrix, baseViewMatrix, orthoMatrix,
+		_deferredBuffers->GetShaderResourceView(0), _deferredBuffers->GetShaderResourceView(1),
+		_lights[0].GetDirection())) {
 		return false;
 	}
 
 	_direct3D->TurnZBufferOn();
+	_direct3D->EndScene();
+
+	return true;
+
+	_models[0].Render(_direct3D->GetDeviceContext());
+
+	if (!_textureShader->Render(_direct3D->GetDeviceContext(), _models[0].GetIndexCount(),
+		worldMatrix, viewMatrix, projectionMatrix, _textures[0].GetTexture())) {
+		return false;
+	}
+
+	_direct3D->EnableAlphaBlending();
+	_direct3D->TurnZBufferOff();
+
+	for (int i = 0; i < 3; i++) {
+
+		_textStrings[i].Render(_direct3D->GetDeviceContext());
+		if (!_fontShader->Render(_direct3D->GetDeviceContext(),
+			_textStrings[i].GetIndexCount(),
+			worldMatrix, baseViewMatrix, orthoMatrix, _font->GetTexture(), _textStrings[i].GetPixelColor()))
+		{
+			return false;
+		}
+		
+	}
+	_direct3D->TurnZBufferOn();
+	_direct3D->DisableAlphaBlending();
 	_direct3D->EndScene();
 
 	return true;
@@ -785,8 +861,9 @@ bool ApplicationClass::Render()
 
 bool ApplicationClass::RenderSceneToTexture(int target)
 {
-	_renderTextures[target].SetRenderTarget(_direct3D->GetDeviceContext());
-	_renderTextures[target].ClearRenderTarget(_direct3D->GetDeviceContext(), 0.f, 0.f, 0.f, 1.f);
+	_deferredBuffers->SetRenderTargets(_direct3D->GetDeviceContext());
+	_deferredBuffers->ClearRenderTargets(_direct3D->GetDeviceContext(), 0.f, 0.f, 0.f, 1.f);
+
 
 	XMMATRIX worldMatrix, viewMatrix, projectionMatrix;
 
@@ -796,7 +873,7 @@ bool ApplicationClass::RenderSceneToTexture(int target)
 
 	_models[0].Render(_direct3D->GetDeviceContext());
 
-	if (!_textureShader->Render(_direct3D->GetDeviceContext(), _models[0].GetIndexCount(),
+	if (!_deferredShader->Render(_direct3D->GetDeviceContext(), _models[0].GetIndexCount(),
 		worldMatrix, viewMatrix, projectionMatrix, _textures[0].GetTexture())) {
 	
 		return false;
@@ -888,6 +965,62 @@ bool ApplicationClass::RenderReflectionToTexture()
 	_direct3D->SetBackBufferRenderTarget();
 	_direct3D->ResetViewport();
 
+	return true;
+}
+
+bool ApplicationClass::TestIntersection(int mouseX, int mouseY)
+{
+	XMMATRIX projectionMatrix, viewMatrix, inverseViewMatrix, worldMatrix, inverseWorldMatrix;
+	XMFLOAT4X4 pMatrix, iViewMatrix;
+	XMVECTOR direction, origin, rayOrigin, rayDirection;
+	XMFLOAT3 cameraDirection, cameraOrigin, rayOri, rayDir;
+
+	float pointX = ((2.f * (float)mouseX) / (float)_screenWidth) - 1.f;
+	float pointY = (((2.f * (float)mouseY) / (float)_screenHeight) - 1.f) * -1.f;
+
+	_direct3D->GetProjectionMatrix(projectionMatrix);
+	XMStoreFloat4x4(&pMatrix, projectionMatrix);
+	pointX = pointX / pMatrix._11;
+	pointY = pointY / pMatrix._22;
+
+	_cameras[1].GetViewMatrix(viewMatrix);
+	inverseViewMatrix = XMMatrixInverse(NULL, viewMatrix);
+	XMStoreFloat4x4(&iViewMatrix, inverseViewMatrix);
+
+	cameraDirection.x = (pointX * iViewMatrix._11) + (pointY * iViewMatrix._21) + iViewMatrix._31;
+	cameraDirection.y = (pointX * iViewMatrix._12) + (pointY * iViewMatrix._22) + iViewMatrix._32;
+	cameraDirection.z = (pointX * iViewMatrix._13) + (pointY * iViewMatrix._23) + iViewMatrix._33;
+	direction = XMLoadFloat3(&cameraDirection);
+
+	cameraOrigin = _cameras[1].GetPosition();
+	origin = XMLoadFloat3(&cameraOrigin);
+
+	worldMatrix = XMMatrixTranslation(0.f, 0.f, 0.f);
+	inverseWorldMatrix = XMMatrixInverse(nullptr, worldMatrix);
+
+	rayOrigin = XMVector3TransformCoord(origin, inverseWorldMatrix);
+	rayDirection = XMVector3TransformNormal(direction, inverseWorldMatrix);
+
+	rayDirection = XMVector3Normalize(rayDirection);
+
+	XMStoreFloat3(&rayOri, rayOrigin);
+	XMStoreFloat3(&rayDir, rayDirection);
+
+	return RaySphereIntersect(rayOri, rayDir, 2.f);
+}
+
+bool ApplicationClass::RaySphereIntersect(XMFLOAT3 rayOrigin, XMFLOAT3 rayDirection, float radius)
+{
+	float a = (rayDirection.x * rayDirection.x) + (rayDirection.y * rayDirection.y) + (rayDirection.z * rayDirection.z);
+	float b = ((rayDirection.x * rayOrigin.x) + (rayDirection.y * rayOrigin.y) + (rayDirection.z * rayOrigin.z)) * 2.f;
+	float c = ((rayOrigin.x * rayOrigin.x) + (rayOrigin.y * rayOrigin.y) + (rayOrigin.z * rayOrigin.z)) - (radius * radius);
+
+	float discriminant = (b * b) - (4 * a * c);
+
+	if (discriminant < 0.f) {
+		return false;
+	}
+	
 	return true;
 }
 

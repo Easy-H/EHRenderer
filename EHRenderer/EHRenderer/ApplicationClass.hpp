@@ -17,6 +17,9 @@ class CameraClass;
 class SimpleModelClass;
 class ModelClass;
 class SpriteClass;
+class DeferredBuffersClass;
+
+class DeferredShaderClass;
 class ColorShaderClass;
 class TextureShaderClass;
 class MultiTextureShaderClass;
@@ -133,6 +136,9 @@ private:
 	std::unique_ptr<OrthoWindowClass> _fullScreenWindow;
 	std::unique_ptr<BlurClass> _blur;
 	std::unique_ptr<BlurShaderClass> _blurShader;
+
+	std::unique_ptr<DeferredShaderClass> _deferredShader;
+	std::unique_ptr<DeferredBuffersClass> _deferredBuffers;
 	
 	int _numLights;
 	int _stringCount;
@@ -140,6 +146,9 @@ private:
 
 	float _waterHeight;
 	float _waterTranslation;
+
+	int _screenWidth;
+	int _screenHeight;
 
 	XMMATRIX _baseViewMatrix;
 
@@ -161,6 +170,9 @@ private:
 	bool RenderBlackAndWhilteShadows(int targetIdx);
 	bool RenderRefractionToTexture();
 	bool RenderReflectionToTexture();
+
+	bool TestIntersection(int, int);
+	bool RaySphereIntersect(XMFLOAT3, XMFLOAT3, float);
 
 	template <typename T>
 	bool CreateShader(HWND, std::unique_ptr<T>&);

@@ -97,7 +97,8 @@ bool D3DClass::Initialize(int screenWidth, int screenHeight, bool vsync,
 
 	D3D_FEATURE_LEVEL featureLevel = D3D_FEATURE_LEVEL_11_0;
 	
-	if (FAILED(D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, &featureLevel, 1,
+	if (FAILED(D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE,
+		nullptr, 0, &featureLevel, 1,
 		D3D11_SDK_VERSION, &swapChainDesc,
 		_swapChain.GetAddressOf(), _device.GetAddressOf(),
 		nullptr, _deviceContext.GetAddressOf()))) return false;
