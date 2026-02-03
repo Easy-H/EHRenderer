@@ -1,0 +1,6 @@
+[
+    { 
+        "model" : "./Assets/models/cube.txt",
+        "materials" : "./Assets/material/mat.json"
+    }
+]

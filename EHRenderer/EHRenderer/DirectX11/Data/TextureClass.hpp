@@ -22,14 +22,14 @@ public:
 	TextureClass(const TextureClass&);
 	~TextureClass();
 
-	bool Initialize(ID3D11Device*, ID3D11DeviceContext*, char*);
+	bool Initialize(ID3D11Device*, ID3D11DeviceContext*, const char*);
 	void Shutdown();
 	ID3D11ShaderResourceView* GetTexture();
 	int GetWidth();
 	int GetHeight();
 
 private:
-	std::unique_ptr<char[]> NewLoadTarga32Bit(char*);
+	std::unique_ptr<char[]> NewLoadTarga32Bit(const char*);
 
 	ComPtr<ID3D11Texture2D> _texture;
 	ComPtr<ID3D11ShaderResourceView> _textureView;

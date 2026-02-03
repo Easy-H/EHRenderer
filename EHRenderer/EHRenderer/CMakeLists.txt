@@ -5,11 +5,13 @@
 # 이 프로젝트의 실행 파일에 소스를 추가합니다.
 add_executable (EHRenderer WIN32
 	"main.cpp" "EHRenderer.h" "SystemClass.cpp" "SimpleInputClass.cpp" "ApplicationClass.cpp" "TimerClass.cpp"
-	
-	"DirectX11/D3DClass.cpp"
+
+	"DirectX11/DX11RE.cpp" 
 	
 	"DirectX11/Object/CameraClass.cpp"
 	"DirectX11/Object/LightClass.cpp" 
+
+	"DirectX11/D3DClass.cpp"
 	
 	"DirectX11/Data/SimpleModelClass.cpp" 
 	"DirectX11/Data/ModelClass.cpp"
@@ -24,7 +26,8 @@ add_executable (EHRenderer WIN32
 	"DirectX11/Shader/Light/LightShaderClass.cpp"
 	"DirectX11/Shader/Font/FontShaderClass.cpp"
 	
-	"DirectX11/Shader/ShaderBase.cpp" "DirectX11/InputClass.cpp"
+	"DirectX11/Shader/ShaderBase.cpp"
+	"DirectX11/Shader/DX11ShaderBase.cpp" "DirectX11/InputClass.cpp"
 	"DirectX11/Shader/Projection/ProjectionShaderClass.cpp"
 	"DirectX11/Shader/Texture/TextureShaderClass.cpp"
 	"DirectX11/Shader/Texture/MultiTextureShaderClass.cpp"
@@ -62,7 +65,11 @@ add_executable (EHRenderer WIN32
 	"DirectX11/Shader/Depth/TransparentDepthShaderClass.cpp"
 	"DirectX11/Shader/Glow/GlowShaderClass.cpp"
 	"DirectX11/Data/DeferredBuffersClass.cpp"
-	"DirectX11/Shader/Deferred/DeferredShaderClass.cpp")
+	"DirectX11/Shader/Deferred/DeferredShaderClass.cpp"
+	"DirectX11/Shader/Ssao/SsaoShaderClass.cpp"
+	"DirectX11/Shader/Ssao/SsaoBlurShaderClass.cpp"
+	"DirectX11/Shader/GBuffer/GBufferShaderClass.cpp" "ResourceManager.cpp"
+	"Data/Position.cpp" "Data/RenderUnit.cpp" "Data/Material.cpp")
 	
 
 # target_link_libraries (EHRenderer PUBLIC "wrl.lib")

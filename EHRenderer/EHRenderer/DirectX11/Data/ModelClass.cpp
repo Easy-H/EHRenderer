@@ -1,6 +1,8 @@
 #include "ModelClass.hpp"
 #include "TextureClass.hpp"
 
+#include "../DX11RE.hpp"
+
 ModelClass::ModelClass()
 {
 
@@ -16,14 +18,13 @@ ModelClass::~ModelClass()
 
 }
 
-bool ModelClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext,
-	char* modelFilename)
+bool ModelClass::Initialize(const char* modelFilename)
 {
 	if (!LoadModel(modelFilename)) return false;
 
 	CalculateModelVectors();
 
-	return InitializeBuffers(device);
+	return InitializeBuffers();
 }
 
 void ModelClass::Shutdown() {
@@ -40,8 +41,10 @@ int ModelClass::GetIndexCount()
 	return _indexCount;
 }
 
-bool ModelClass::InitializeBuffers(ID3D11Device* device)
+bool ModelClass::InitializeBuffers()
 {
+
+	ID3D11Device* device = DX11RE::GetInstance().GetDevice();
 
 	VertexType* vertices = new VertexType[_vertexCount];
 	if (!vertices) return false;
@@ -122,7 +125,7 @@ ID3D11ShaderResourceView* ModelClass::GetTexture() {
 	return _texture->GetTexture();
 }
 
-bool ModelClass::LoadModel(char* filename)
+bool ModelClass::LoadModel(const char* filename)
 {
 	ifstream fin;
 	char input;

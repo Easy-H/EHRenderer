@@ -1,0 +1,6 @@
+{
+    "shader": "texture",
+    "textures" : [
+        "./Assets/textures/fire01.tga"
+    ]
+}

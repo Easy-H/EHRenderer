@@ -5,6 +5,7 @@
 class ShaderBase {
 public:
 	virtual ~ShaderBase() {}
+
 	virtual bool Initialize(ID3D11Device*, HWND) = 0;
 
 protected:

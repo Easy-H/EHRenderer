@@ -13,7 +13,7 @@ TextureClass::~TextureClass()
 }
 
 bool TextureClass::Initialize(ID3D11Device* device,
-	ID3D11DeviceContext* deviceContext, char* filename)
+	ID3D11DeviceContext* deviceContext, const char* filename)
 {
 	std::unique_ptr<char[]> targaData = NewLoadTarga32Bit(filename);
 
@@ -66,7 +66,7 @@ ID3D11ShaderResourceView* TextureClass::GetTexture()
 {
 	return _textureView.Get();
 }
-std::unique_ptr<char[]> TextureClass::NewLoadTarga32Bit(char* filename)
+std::unique_ptr<char[]> TextureClass::NewLoadTarga32Bit(const char* filename)
 {
 	FILE* filePtr;
 

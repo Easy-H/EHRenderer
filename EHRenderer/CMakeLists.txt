@@ -12,4 +12,6 @@ endif()
 project ("EHRenderer")
 
 # 하위 프로젝트를 포함합니다.
+add_subdirectory ("EasyH")
+add_subdirectory ("External")
 add_subdirectory ("EHRenderer")

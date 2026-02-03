@@ -1,4 +1,5 @@
 #include "AlphaMapShaderClass.hpp"
+#include "../../DX11RE.hpp"
 
 #include <d3dcompiler.h>
 #include <fstream>
@@ -15,7 +16,7 @@ AlphaMapShaderClass::~AlphaMapShaderClass()
 {
 }
 
-bool AlphaMapShaderClass::Initialize(ID3D11Device* device, HWND hwnd)
+bool AlphaMapShaderClass::Initialize()
 {
 	wchar_t vsFilename[128];
 
@@ -24,15 +25,25 @@ bool AlphaMapShaderClass::Initialize(ID3D11Device* device, HWND hwnd)
 	wchar_t psFilename[128];
 	if (wcscpy_s(psFilename, 128, L"./HLSL/AlphaMap.ps") != 0) return false;
 
+	ID3D11Device* device = DX11RE::GetInstance().GetDevice();
+	HWND hwnd = DX11RE::GetInstance().GetHWND();
+
 
 	return InitializeShader(device, hwnd, vsFilename, psFilename);
 }
 
-bool AlphaMapShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount,
-	XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix, 
-	ID3D11ShaderResourceView* texture1, ID3D11ShaderResourceView* texture2, ID3D11ShaderResourceView* texture3)
+bool AlphaMapShaderClass::Render(int indexCount)
 {
-	if (!SetShaderParameters(deviceContext, worldMatrix, viewMatrix, projectionMatrix, texture1, texture2, texture3)) {
+	ID3D11DeviceContext* deviceContext = DX11RE::GetInstance().GetDeviceContext();
+
+	XMMATRIX viewMatrix, projectionMatrix;
+
+	DX11RE::GetInstance().GetView(viewMatrix);
+	DX11RE::GetInstance().GetProjection(projectionMatrix);
+
+	XMMATRIX worldMatrix = XMMatrixTranslation(0.f, 0.f, 0.f);
+
+	if (!SetShaderParameters(deviceContext, worldMatrix, viewMatrix, projectionMatrix)) {
 		return false;
 	}
 
@@ -128,8 +139,7 @@ bool AlphaMapShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd,
 }
 
 bool AlphaMapShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext,
-	XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix,
-	ID3D11ShaderResourceView* texture1, ID3D11ShaderResourceView* texture2, ID3D11ShaderResourceView* texture3)
+	XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix)
 {
 	worldMatrix = XMMatrixTranspose(worldMatrix);
 	viewMatrix = XMMatrixTranspose(viewMatrix);
@@ -150,10 +160,6 @@ bool AlphaMapShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext
 	deviceContext->Unmap(_matrixBuffer.Get(), 0);
 
 	deviceContext->VSSetConstantBuffers(0, 1, _matrixBuffer.GetAddressOf());
-
-	deviceContext->PSSetShaderResources(0, 1, &texture1);
-	deviceContext->PSSetShaderResources(1, 1, &texture2);
-	deviceContext->PSSetShaderResources(2, 1, &texture3);
 
 	return true;
 }

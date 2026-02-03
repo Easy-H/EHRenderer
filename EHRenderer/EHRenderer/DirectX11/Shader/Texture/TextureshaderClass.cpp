@@ -1,4 +1,5 @@
 #include "TextureShaderClass.hpp"
+#include "../../DX11RE.hpp"
 
 #include <d3dcompiler.h>
 
@@ -15,13 +16,16 @@ TextureShaderClass::~TextureShaderClass()
 }
 
 
-bool TextureShaderClass::Initialize(ID3D11Device* device, HWND hwnd)
+bool TextureShaderClass::Initialize()
 {
 	wchar_t vsFilename[128];
 	if (wcscpy_s(vsFilename, 128, L"./HLSL/Texture/Texture.vs") != 0) return false;
 
 	wchar_t psFilename[128];
 	if (wcscpy_s(psFilename, 128, L"./HLSL/Texture/Texture.ps") != 0) return false;
+
+	ID3D11Device* device = DX11RE::GetInstance().GetDevice();
+	HWND hwnd = DX11RE::GetInstance().GetHWND();
 
 	return InitializeShader(device, hwnd, vsFilename, psFilename);
 }
@@ -30,12 +34,19 @@ void TextureShaderClass::Shutdown() {
 	ShutdownShader();
 }
 
-bool TextureShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount,
-	XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix,
-	ID3D11ShaderResourceView* texture)
+bool TextureShaderClass::Render(int indexCount)
 {
+	ID3D11DeviceContext* deviceContext = DX11RE::GetInstance().GetDeviceContext();
+
+	XMMATRIX viewMatrix, projectionMatrix;
+
+	DX11RE::GetInstance().GetView(viewMatrix);
+	DX11RE::GetInstance().GetProjection(projectionMatrix);
+
+	XMMATRIX worldMatrix = XMMatrixTranslation(0.f, 0.f, 0.f);
+
 	if (!SetShaderParameters(deviceContext,
-		worldMatrix, viewMatrix, projectionMatrix, texture)) return false;
+		worldMatrix, viewMatrix, projectionMatrix)) return false;
 
 	RenderShader(deviceContext, indexCount);
 	return true;
@@ -131,8 +142,7 @@ void TextureShaderClass::ShutdownShader()
 }
 
 bool TextureShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext,
-	XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix,
-	ID3D11ShaderResourceView* texture) {
+	XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix) {
 
 	worldMatrix = XMMatrixTranspose(worldMatrix);
 	viewMatrix = XMMatrixTranspose(viewMatrix);
@@ -153,7 +163,6 @@ bool TextureShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext,
 	unsigned int bufferNumber = 0;
 
 	deviceContext->VSSetConstantBuffers(bufferNumber, 1, _matrixBuffer.GetAddressOf());
-	deviceContext->PSSetShaderResources(0, 1, &texture);
 
 	return true;
 }

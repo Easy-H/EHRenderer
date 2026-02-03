@@ -75,6 +75,11 @@ ApplicationClass::~ApplicationClass()
 
 bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 {
+	_timer = make_unique<TimerClass>();
+
+	if (!_timer->Initialize()) return false;
+
+	/*
 	_direct3D = std::make_unique<D3DClass>();
 	_direct3D->Initialize(screenWidth, screenHeight, VSYNC_ENABLED, hwnd, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR);
 	
@@ -247,7 +252,6 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 	/*
-	*/
 	if (!CreateShader<ShadowShaderClass>(hwnd, _shadowShader)) {
 		return false;
 	}
@@ -305,10 +309,6 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	_modelList = make_unique<ModelListClass>();
 	_modelList->Initialize(25);
 
-	_timer = make_unique<TimerClass>();
-
-	if (!_timer->Initialize()) return false;
-
 	_position = make_unique<PositionClass>();
 
 	//_position->SetPosition(0.f, 0.f, -10.f);
@@ -364,11 +364,12 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	_waterHeight = 2.75f;
 	_waterTranslation = 0.f;
 
+	*/
 	return true;
 }
 
 void ApplicationClass::Shutdown() {
-	_direct3D->Shutdown();
+	//_direct3D->Shutdown();
 }
 
 bool ApplicationClass::Frame(InputClass& input)
@@ -377,6 +378,8 @@ bool ApplicationClass::Frame(InputClass& input)
 
 	_timer->Frame();
 
+	return true;
+	/*
 	_position->SetFrameTime(_timer->GetTime());
 
 	_position->MoveLeft(input.IsLeftArrowPressed());
@@ -429,7 +432,7 @@ bool ApplicationClass::Frame(InputClass& input)
 	
 	// Set the position and lookat for the light.
 	_lights[0].SetPosition(lightPosX, 8.0f, -0.1f);
-	_lights[0].SetLookAt(-lightPosX, 0.0f, 0.0f);*/
+	_lights[0].SetLookAt(-lightPosX, 0.0f, 0.0f);
 
 	input.GetMouseLocation(mouseX, mouseY);
 
@@ -495,6 +498,7 @@ bool ApplicationClass::Frame(InputClass& input)
 
 bool ApplicationClass::PostProcess(int targetIdx)
 {
+	/*
 	float fogColor = 0.f;
 
 	_direct3D->BeginScene(fogColor, fogColor, fogColor, 1.0f);
@@ -520,13 +524,13 @@ bool ApplicationClass::PostProcess(int targetIdx)
 
 
 	_direct3D->EndScene();
-
+	*/
 	return true;
 }
 
 bool ApplicationClass::RenderDepthToTexture()
 {
-
+	/*
 	for (int i = 0; i < _numLights; i++) {
 
 		_depthTextures[i].SetRenderTarget(_direct3D->GetDeviceContext());
@@ -557,7 +561,6 @@ bool ApplicationClass::RenderDepthToTexture()
 			return false;
 		}
 		/*
-		*/
 
 		scaleMatrix = XMMatrixScaling(2.f, 2.f, 2.f);
 		translateMatrix = XMMatrixTranslation(0.f, 1.f, 0.f);
@@ -575,13 +578,13 @@ bool ApplicationClass::RenderDepthToTexture()
 
 	_direct3D->SetBackBufferRenderTarget();
 	_direct3D->ResetViewport();
-
+	*/
 	return true;
 }
 
 bool ApplicationClass::RenderBlackAndWhilteShadows(int targetIdx)
 {
-
+	/*
 	_renderTextures[targetIdx].SetRenderTarget(_direct3D->GetDeviceContext());
 	_renderTextures[targetIdx].ClearRenderTarget(_direct3D->GetDeviceContext(), 1.f, 1.f, 1.f, 1.f);
 
@@ -635,12 +638,14 @@ bool ApplicationClass::RenderBlackAndWhilteShadows(int targetIdx)
 
 	_direct3D->SetBackBufferRenderTarget();
 	_direct3D->ResetViewport();
-
+	*/
 	return true;
 }
 
 bool ApplicationClass::Render()
 {
+	return true;
+	/*
 	XMMATRIX worldMatrix, viewMatrix, projectionMatrix;
 	XMMATRIX baseViewMatrix, orthoMatrix;
 
@@ -660,7 +665,6 @@ bool ApplicationClass::Render()
 		worldMatrix, baseViewMatrix, projectionMatrix, _deferredBuffers->GetShaderResourceView(0))) {
 		return false;
 	}
-	*/
 
 	if (!_lightShader->Render(_direct3D->GetDeviceContext(), _fullScreenWindow->GetIndexCount(),
 		worldMatrix, baseViewMatrix, orthoMatrix,
@@ -861,6 +865,7 @@ bool ApplicationClass::Render()
 
 bool ApplicationClass::RenderSceneToTexture(int target)
 {
+	/*
 	_deferredBuffers->SetRenderTargets(_direct3D->GetDeviceContext());
 	_deferredBuffers->ClearRenderTargets(_direct3D->GetDeviceContext(), 0.f, 0.f, 0.f, 1.f);
 
@@ -881,13 +886,14 @@ bool ApplicationClass::RenderSceneToTexture(int target)
 
 	_direct3D->SetBackBufferRenderTarget();
 	_direct3D->ResetViewport();
-
+	*/
 	return true;
 
 }
 
 bool ApplicationClass::RenderGlowToTexture(int target)
 {
+	/*
 	_renderTextures[target].SetRenderTarget(_direct3D->GetDeviceContext());
 	_renderTextures[target].ClearRenderTarget(_direct3D->GetDeviceContext(), 0.f, 0.f, 0.f, 1.f);
 
@@ -907,12 +913,13 @@ bool ApplicationClass::RenderGlowToTexture(int target)
 
 	_direct3D->SetBackBufferRenderTarget();
 	_direct3D->ResetViewport();
-
+	*/
 	return true;
 }
 
 bool ApplicationClass::RenderRefractionToTexture()
 {
+	/*
 	XMFLOAT4 clipPlane = XMFLOAT4(0.f, -1.f, 0.f, _waterHeight  + 0.1f);
 
 	_renderTextures[0].SetRenderTarget(_direct3D->GetDeviceContext());
@@ -935,13 +942,13 @@ bool ApplicationClass::RenderRefractionToTexture()
 	
 	_direct3D->SetBackBufferRenderTarget();
 	_direct3D->ResetViewport();
-	
+	*/
 	return true;
 }
 
 bool ApplicationClass::RenderReflectionToTexture()
 {
-
+	/*
 	_renderTextures[1].SetRenderTarget(_direct3D->GetDeviceContext());
 	_renderTextures[1].ClearRenderTarget(_direct3D->GetDeviceContext(), 0.f, 0.f, 0.f, 1.f);
 
@@ -964,12 +971,13 @@ bool ApplicationClass::RenderReflectionToTexture()
 
 	_direct3D->SetBackBufferRenderTarget();
 	_direct3D->ResetViewport();
-
+	*/
 	return true;
 }
 
 bool ApplicationClass::TestIntersection(int mouseX, int mouseY)
 {
+	/*
 	XMMATRIX projectionMatrix, viewMatrix, inverseViewMatrix, worldMatrix, inverseWorldMatrix;
 	XMFLOAT4X4 pMatrix, iViewMatrix;
 	XMVECTOR direction, origin, rayOrigin, rayDirection;
@@ -1005,12 +1013,15 @@ bool ApplicationClass::TestIntersection(int mouseX, int mouseY)
 
 	XMStoreFloat3(&rayOri, rayOrigin);
 	XMStoreFloat3(&rayDir, rayDirection);
-
 	return RaySphereIntersect(rayOri, rayDir, 2.f);
+	*/
+
+	return true;
 }
 
 bool ApplicationClass::RaySphereIntersect(XMFLOAT3 rayOrigin, XMFLOAT3 rayDirection, float radius)
 {
+	/*
 	float a = (rayDirection.x * rayDirection.x) + (rayDirection.y * rayDirection.y) + (rayDirection.z * rayDirection.z);
 	float b = ((rayDirection.x * rayOrigin.x) + (rayDirection.y * rayOrigin.y) + (rayDirection.z * rayOrigin.z)) * 2.f;
 	float c = ((rayOrigin.x * rayOrigin.x) + (rayOrigin.y * rayOrigin.y) + (rayOrigin.z * rayOrigin.z)) - (radius * radius);
@@ -1020,13 +1031,13 @@ bool ApplicationClass::RaySphereIntersect(XMFLOAT3 rayOrigin, XMFLOAT3 rayDirect
 	if (discriminant < 0.f) {
 		return false;
 	}
-	
+	*/
 	return true;
 }
 
 bool ApplicationClass::UpdateMouseStrings(int mouseX, int mouseY, bool mouseDown)
 {
-
+	/*
 	char tempString[16], finalString[32];
 
 	sprintf_s(tempString, "%d", mouseX);
@@ -1055,12 +1066,13 @@ bool ApplicationClass::UpdateMouseStrings(int mouseX, int mouseY, bool mouseDown
 	if (!_textStrings[2].UpdateText(_direct3D->GetDeviceContext(), _font.get(),
 		finalString, 10, 90, 0.0f, 1.0f, 1.0f))
 		return false;
-
+		*/
 	return true;
 }
 
 bool ApplicationClass::UpdateRenderCountString(int renderCount)
 {
+	/*
 	char tempString[16];
 	sprintf_s(tempString, "%d", renderCount);
 
@@ -1072,6 +1084,6 @@ bool ApplicationClass::UpdateRenderCountString(int renderCount)
 	if (!_textStrings[0].UpdateText(_direct3D->GetDeviceContext(), _font.get(),
 		finalString, 10, 10, 1.0f, 1.0f, 1.f))
 		return false;
-
+		*/
 	return true;
 }

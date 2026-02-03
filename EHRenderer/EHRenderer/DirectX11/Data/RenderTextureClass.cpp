@@ -20,6 +20,9 @@ bool RenderTextureClass::Initialize(ID3D11Device* device,
 	case 1:
 		textureFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 		break;
+	case 2:
+		textureFormat = DXGI_FORMAT_R32_FLOAT;
+		break;
 	default:
 		textureFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 		break;

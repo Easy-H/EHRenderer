@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../ShaderBase.hpp"
+#include "../DX11ShaderBase.hpp"
 #include <directxmath.h>
 #include <wrl.h>
 #include <d3d11.h>
@@ -8,7 +8,7 @@
 using namespace DirectX;
 using namespace Microsoft::WRL;
 
-class AlphaMapShaderClass : public ShaderBase {
+class AlphaMapShaderClass : public DX11ShaderBase {
 private:
 	struct MatrixBufferType {
 		XMMATRIX worldMatrix;
@@ -20,14 +20,13 @@ public:
 	AlphaMapShaderClass(const AlphaMapShaderClass&);
 	~AlphaMapShaderClass();
 
-	virtual bool Initialize(ID3D11Device*, HWND) override;
-	bool Render(ID3D11DeviceContext*, int, XMMATRIX, XMMATRIX, XMMATRIX,
-		ID3D11ShaderResourceView*, ID3D11ShaderResourceView*, ID3D11ShaderResourceView*);
+	virtual bool Initialize() override;
+	virtual bool Render(int) override;
 
 private:
 	bool InitializeShader(ID3D11Device*, HWND, WCHAR*, WCHAR*);
 
-	bool SetShaderParameters(ID3D11DeviceContext*, XMMATRIX, XMMATRIX, XMMATRIX, ID3D11ShaderResourceView*, ID3D11ShaderResourceView*, ID3D11ShaderResourceView*);
+	bool SetShaderParameters(ID3D11DeviceContext*, XMMATRIX, XMMATRIX, XMMATRIX);
 	void RenderShader(ID3D11DeviceContext*, int);
 
 	ComPtr<ID3D11PixelShader> _pixelShader;

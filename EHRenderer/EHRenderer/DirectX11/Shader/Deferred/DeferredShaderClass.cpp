@@ -156,6 +156,8 @@ void DeferredShaderClass::RenderShader(ID3D11DeviceContext* deviceContext, int i
 	deviceContext->VSSetShader(_vertexShader.Get(), nullptr, 0);
 	deviceContext->PSSetShader(_pixelShader.Get(), nullptr, 0);
 
+	deviceContext->PSSetSamplers(0, 1, _sampleState.GetAddressOf());
+
 	deviceContext->DrawIndexed(indexCount, 0, 0);
 
 }

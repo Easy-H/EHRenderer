@@ -40,8 +40,7 @@ public:
 	ModelClass(const ModelClass&);
 	~ModelClass();
 
-	bool Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext,
-		char* modelFilename);
+	bool Initialize(const char* modelFilename);
 	void Shutdown();
 	void Render(ID3D11DeviceContext*);
 
@@ -50,11 +49,11 @@ public:
 	ID3D11ShaderResourceView* GetTexture();
 
 private:
-	bool InitializeBuffers(ID3D11Device*);
+	bool InitializeBuffers();
 	void ShutdownBuffers();
 	void RenderBuffers(ID3D11DeviceContext*);
 
-	bool LoadModel(char*);
+	bool LoadModel(const char*);
 	void ReleaseModel();
 
 	void CalculateModelVectors();
