@@ -8,7 +8,7 @@ class ShaderBaseBase;
 
 class Material {
 public:
-	bool Initialize(RenderEngineBase* engine, char* addr);
+	bool Initialize(RenderEngineBase* engine, const char* addr);
 	bool Render(RenderEngineBase* engine, int indexCount);
 private:
 	ShaderBaseBase* _shader;

@@ -18,6 +18,7 @@ class TextureClass;*/
 
 #include "Data/ModelClass.hpp"
 #include "Data/TextureClass.hpp"
+#include "../Data/Material.hpp"
 
 class LightClass;
 class CameraClass;
@@ -81,23 +82,37 @@ class ParticleShaderClass;
 
 using namespace DirectX;
 
-const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
 const float SCREEN_DEPTH = 100.0f;
 const float SCREEN_NEAR = 1.f;
 
 class DX11RE : public RenderEngineBase, public EasyH::Singleton<DX11RE> {
+private:
+	class DX11RenderUnit {
+	public:
+		DX11RenderUnit();
+		void Initialize(DX11RE* engine, const char* modelAddr, const char* materialAddr);
+		bool Render(DX11RE* engine);
+	private:
+		Material* _material;
+		int _modelId;
+	};
 public:
 	DX11RE();
 	DX11RE(const DX11RE*);
 	~DX11RE();
 
 	void SetHWND(HWND hwnd) { _hwnd = hwnd; }
-	virtual bool Initialize(int screenWidth, int screenHeight) override;
+	virtual bool Initialize(int screenWidth, int screenHeight, bool fullscreen) override;
 
+	Material* RegisterMaterial(const char* addr);
 	virtual int RegisterModel(const char* addr) override;
 	virtual int RegisterTexture(const char* addr) override;
 	virtual int RegisterFont(const char* addr) override;
+
+	int BindModel(int id);
+
+	void RegisterRenderUnit(const char* modelAddr, const char* materialAddr);
 
 	virtual ShaderBaseBase* GetShader(const char* name) override;
 
@@ -113,18 +128,24 @@ public:
 	ID3D11ShaderResourceView* GetTexture(int id);
 
 private:
+	bool CreateLegacyShaders();
+	bool CreateShaders();
 
 	template <typename T>
-	bool CreateShader(HWND, std::unique_ptr<T>&);
+	bool CreateLegacyShader(HWND, std::unique_ptr<T>&);
+
+	std::vector<std::unique_ptr<DX11RenderUnit>> _renderTargets;
 
 	std::unique_ptr<D3DClass> _direct3D;
-	//std::unique_ptr<CameraClass> _camera;
+	std::unique_ptr<CameraClass> _camera;
+
+	std::unordered_map<const char*, unique_ptr<Material>> _materialMap;
 
 	std::unordered_map<const char*, int> _modelMap;
-	//std::vector<std::unique_ptr<ModelClass>> _models;
+	std::vector<std::unique_ptr<ModelClass>> _models;
 
 	std::unordered_map<const char*, int> _textureMap;
-	//std::vector<std::unique_ptr<TextureClass>> _textures;
+	std::vector<std::unique_ptr<TextureClass>> _textures;
 
 	HWND _hwnd;
 
@@ -181,8 +202,6 @@ private:
 
 	std::unique_ptr<LightClass[]> _lights;
 
-	std::unique_ptr<ShaderManagerClass> _shaderManager;
-
 	std::unique_ptr<PositionClass> _position;
 	std::unique_ptr<FrustumClass> _frustum;
 	std::unique_ptr<ModelListClass> _modelList;
@@ -201,7 +220,7 @@ private:
 };
 
 template<typename T>
-bool DX11RE::CreateShader(HWND hwnd, std::unique_ptr<T>& ptr)
+bool DX11RE::CreateLegacyShader(HWND hwnd, std::unique_ptr<T>& ptr)
 {
 	ptr = make_unique<T>();
 	if (!ptr->Initialize(_direct3D->GetDevice(), hwnd)) {

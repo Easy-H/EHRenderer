@@ -2,64 +2,8 @@
 
 #include "TimerClass.hpp"
 
+#include "DirectX11/DX11RE.hpp"
 #include "DirectX11/InputClass.hpp"
-#include "DirectX11/Object/CameraClass.hpp"
-#include "DirectX11/Object/LightClass.hpp"
-
-#include "DirectX11/Shader/Particle/ParticleShaderClass.hpp"
-#include "DirectX11/Shader/Particle/ParticleSystemClass.hpp"
-
-#include "DirectX11/Data/ModelClass.hpp"
-#include "DirectX11/Data/TextureClass.hpp"
-#include "DirectX11/Data/SimpleModelClass.hpp"
-#include "DirectX11/Data/SpriteClass.hpp"
-#include "DirectX11/Data/FontClass.hpp"
-#include "DirectX11/Data/TextClass.hpp"
-#include "DirectX11/Data/DeferredBuffersClass.hpp"
-
-#include "DirectX11/Shader/Deferred/DeferredShaderClass.hpp"
-
-#include "DirectX11/ShaderManager.hpp"
-#include "DirectX11/Shader/Color/ColorShaderClass.hpp"
-#include "DirectX11/Shader/Texture/TextureShaderClass.hpp"
-#include "DirectX11/Shader/Texture/MultiTextureShaderClass.hpp"
-#include "DirectX11/Shader/AlphaMap/AlphaMapShaderClass.hpp"
-#include "DirectX11/Shader/NormalMap/NormalMapShaderClass.hpp"
-#include "DirectX11/Shader/SpecMap/SpecMapShaderClass.hpp"
-#include "DirectX11/Shader/LightMap/LightMapShaderClass.hpp"
-#include "DirectX11/Shader/Light/LightShaderClass.hpp"
-#include "DirectX11/Shader/Font/FontShaderClass.hpp"
-#include "DirectX11/Shader/Fog/FogShaderClass.hpp"
-#include "DirectX11/Shader/ClipPlane/ClipPlaneShaderClass.hpp"
-#include "DirectX11/Shader/Translate/TranslateShaderClass.hpp"
-#include "DirectX11/Shader/Transparent/TransparentShaderClass.hpp"
-#include "DirectX11/Shader/Reflection/ReflectionShaderClass.hpp"
-#include "DirectX11/Shader/Water/WaterShaderClass.hpp"
-#include "DirectX11/Shader/Refraction/RefractionShaderClass.hpp"
-#include "DirectX11/Shader/Glass/GlassShaderClass.hpp"
-#include "DirectX11/Shader/Fire/FireShaderClass.hpp"
-#include "DirectX11/Shader/Blur/BlurShaderClass.hpp"
-#include "DirectX11/Shader/Fade/FadeShaderClass.hpp"
-#include "DirectX11/Shader/Projection/ProjectionShaderClass.hpp"
-#include "DirectX11/Shader/Glow/GlowShaderClass.hpp"
-
-#include "DirectX11/Shader/Shadow/ShadowShaderClass.hpp"
-#include "DirectX11/Shader/Shadow/MultiLIghtShadowShaderClass.hpp"
-#include "DirectX11/Shader/Shadow/DirectionalLightShadowShaderClass.hpp"
-#include "DirectX11/Shader/Shadow/SoftShadowShaderClass.hpp"
-
-#include "DirectX11/Shader/Depth/DepthShaderClass.hpp"
-#include "DirectX11/Shader/Depth/TransparentDepthShaderClass.hpp"
-
-#include "DirectX11/Data/OrthoWindowClass.hpp"
-#include "DirectX11/Shader/Blur/BlurClass.hpp"
-
-#include "DirectX11/FrustumClass.hpp"
-#include "DirectX11/PositionClass.hpp"
-#include "DirectX11/ModelListClass.hpp"
-
-#include "DirectX11/Data/RenderTextureClass.hpp"
-#include "DirectX11/Data/DisplayPlaneClass.hpp"
 
 ApplicationClass::ApplicationClass() {
 
@@ -79,6 +23,13 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	if (!_timer->Initialize()) return false;
 
+	DX11RE::GetInstance().SetHWND(hwnd);
+	DX11RE::GetInstance().Initialize(screenWidth, screenHeight, FULL_SCREEN);
+	
+	DX11RE::GetInstance().RegisterRenderUnit(
+		"./Assets/models/cube.txt", "./Assets/materials/mat.json");
+	DX11RE::GetInstance().RegisterRenderUnit(
+		"./Assets/models/floor.txt", "./Assets/materials/mat.json");
 	/*
 	_direct3D = std::make_unique<D3DClass>();
 	_direct3D->Initialize(screenWidth, screenHeight, VSYNC_ENABLED, hwnd, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR);
@@ -378,7 +329,10 @@ bool ApplicationClass::Frame(InputClass& input)
 
 	_timer->Frame();
 
+	DX11RE::GetInstance().Render();
+
 	return true;
+
 	/*
 	_position->SetFrameTime(_timer->GetTime());
 

@@ -77,7 +77,7 @@ DX11RE::~DX11RE()
 
 void DX11RE::GetView(XMMATRIX& viewMatrix)
 {
-	//_camera->GetViewMatrix(viewMatrix);
+	_camera->GetViewMatrix(viewMatrix);
 }
 
 void DX11RE::GetProjection(XMMATRIX& projectionMatrix)
@@ -95,22 +95,29 @@ ID3D11DeviceContext* DX11RE::GetDeviceContext()
 	return _direct3D->GetDeviceContext();
 }
 
-bool DX11RE::Initialize(int screenWidth, int screenHeight)
+bool DX11RE::Initialize(int screenWidth, int screenHeight, bool fullscreen)
 {
 	_direct3D = std::make_unique<D3DClass>();
 
-	_direct3D->Initialize(screenWidth, screenHeight, VSYNC_ENABLED, _hwnd, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR);
+	_direct3D->Initialize(screenWidth, screenHeight, VSYNC_ENABLED, _hwnd, fullscreen, SCREEN_DEPTH, SCREEN_NEAR);
 
 	_screenWidth = screenWidth;
 	_screenHeight = screenHeight;
 
-	//_camera = std::make_unique<CameraClass>();
+	_camera = std::make_unique<CameraClass>();
 
 	float aspectRatio = (float)screenWidth / (float)screenHeight;
 
-	//_camera->SetPosition(0.f, 0.f, -10.f);
-	//_camera->SetRotation(30.f, 0.f, 0.f);
-	//_camera->SetProjectionParameters(3.141592 / 2.f, aspectRatio, SCREEN_DEPTH, SCREEN_NEAR);
+	_camera->SetPosition(0.f, 4.f, -6.f);
+	_camera->SetRotation(30.f, 0.f, 0.f);
+	_camera->SetProjectionParameters(3.141592 / 2.f, aspectRatio, SCREEN_DEPTH, SCREEN_NEAR);
+
+	if (!CreateLegacyShaders()) {
+		return false;
+	}
+	if (!CreateShaders()) {
+		return false;
+	}
 
 	_numLights = 2;
 
@@ -131,160 +138,79 @@ bool DX11RE::Initialize(int screenWidth, int screenHeight)
 
 	_lights[1].SetLookAt(0, 0, 0);
 
-	_particleShader = make_unique<ParticleShaderClass>();
-
-	if (!_particleShader->Initialize(_direct3D->GetDevice(), _hwnd)) {
-		return false;
-	}
-	_shaderManager = make_unique<ShaderManagerClass>();
-
-	if (!_shaderManager->Initialize(_direct3D->GetDevice(), _hwnd)) {
-		return false;
-	}
-
-	_deferredBuffers = make_unique<DeferredBuffersClass>();
-	if (!_deferredBuffers->Initialize(_direct3D->GetDevice(), screenWidth, screenHeight, SCREEN_DEPTH, SCREEN_NEAR)) {
-		MessageBox(_hwnd, "Error", "Error", MB_OK);
-		return false;
-	}
-
-	if (!CreateShader<DeferredShaderClass>(_hwnd, _deferredShader)) {
-		return false;
-	}
-
-	if (!CreateShader<LightShaderClass>(_hwnd, _lightShader)) {
-		return false;
-	}
-
-	if (!CreateShader<FontShaderClass>(_hwnd, _fontShader)) {
-		return false;
-	}
-	_textureShader = make_unique<TextureShaderClass>();
-
-	if (!_textureShader->Initialize()) {
-		return false;
-	}
-
-	if (!CreateShader<FogShaderClass>(_hwnd, _fogShader)) {
-		return false;
-	}
-
-	if (!CreateShader<ClipPlaneShaderClass>(_hwnd, _clipPlaneShader)) {
-		return false;
-	}
-
-	if (!CreateShader<TranslateShaderClass>(_hwnd, _translateShader)) {
-		return false;
-	}
-
-	if (!CreateShader<TransparentShaderClass>(_hwnd, _transparentShader)) {
-		return false;
-	}
-
-	if (!CreateShader<ReflectionShaderClass>(_hwnd, _reflectionShader)) {
-		return false;
-	}
-
-	if (!CreateShader<WaterShaderClass>(_hwnd, _waterShader)) {
-		return false;
-	}
-
-	if (!CreateShader<RefractionShaderClass>(_hwnd, _refractionShader)) {
-		return false;
-	}
-
-	if (!CreateShader<GlassShaderClass>(_hwnd, _glassShader)) {
-		return false;
-	}
-
-	if (!CreateShader<FireShaderClass>(_hwnd, _fireShader)) {
-		return false;
-	}
-
-	if (!CreateShader<FadeShaderClass>(_hwnd, _fadeShader)) {
-		return false;
-	}
-
-	if (!CreateShader<ProjectionShaderClass>(_hwnd, _projectionShader)) {
-		return false;
-	}
-
-	if (!CreateShader<GlowShaderClass>(_hwnd, _glowShader)) {
-		return false;
-	}
-	/*
-	*/
-	if (!CreateShader<ShadowShaderClass>(_hwnd, _shadowShader)) {
-		return false;
-	}
-
-	if (!CreateShader<MultiLightShadowShaderClass>(_hwnd, _mShadowShader)) {
-		return false;
-	}
-
-	if (!CreateShader<DirectionalLightShadowShaderClass>(_hwnd, _dShadowShader)) {
-		return false;
-	}
-
-	if (!CreateShader<SoftShadowShaderClass>(_hwnd, _sShadowShader)) {
-		return false;
-	}
-
-	if (!CreateShader<DepthShaderClass>(_hwnd, _depthShader)) {
-		return false;
-	}
-
-	if (!CreateShader<TransparentDepthShaderClass>(_hwnd, _transparentDepthShader)) {
-		return false;
-	}
-
 	return true;
+}
+
+Material* DX11RE::RegisterMaterial(const char* addr)
+{
+	if (_materialMap.contains(addr)) {
+
+		return _materialMap[addr].get();
+	}
+
+	std::unique_ptr<Material> material = std::make_unique<Material>();
+
+	material->Initialize(this, addr);
+
+	_materialMap[addr] = std::move(material);
+
+	return _materialMap[addr].get();
 }
 
 int DX11RE::RegisterModel(const char* addr)
 {
-	return 0;
-
-	/*
 	if (_modelMap.contains(addr)) {
 
 		return _modelMap[addr];
-	}*/
+	}
 
-	//_modelMap[addr] = _models.size();
+	_modelMap[addr] = _models.size();
 
 	std::unique_ptr<ModelClass> model = std::make_unique<ModelClass>();
 
 	model->Initialize(addr);
 
-	//_models.push_back(model);
+	_models.push_back(std::move(model));
 
-	//return _modelMap[addr];
+	return _modelMap[addr];
 }
 
 int DX11RE::RegisterTexture(const char* addr)
 {
-	return 0;
-	/*
 	if (_textureMap.contains(addr)) {
 
 		return _textureMap[addr];
 	}
-	*/
-	//_textureMap[addr] = _textures.size();
+
+	_textureMap[addr] = _textures.size();
 
 	std::unique_ptr<TextureClass> texture = std::make_unique<TextureClass>();
 
 	texture->Initialize(_direct3D->GetDevice(), _direct3D->GetDeviceContext(), addr);
 
-	//_textures.push_back(texture);
+	_textures.push_back(std::move(texture));
 
-	//return _textureMap[addr];
+	return _textureMap[addr];
 }
 
 int DX11RE::RegisterFont(const char* addr)
 {
 	return 0;
+}
+
+int DX11RE::BindModel(int id)
+{
+	_models[id]->Render(_direct3D->GetDeviceContext());
+	return _models[id]->GetIndexCount();
+}
+
+void DX11RE::RegisterRenderUnit(const char* modelAddr, const char* materialAddr)
+{
+	std::unique_ptr<DX11RenderUnit> unit = std::make_unique<DX11RenderUnit>();
+	
+	unit->Initialize(this, modelAddr, materialAddr);
+
+	_renderTargets.push_back(std::move(unit));
 }
 
 ShaderBaseBase* DX11RE::GetShader(const char* name)
@@ -294,11 +220,146 @@ ShaderBaseBase* DX11RE::GetShader(const char* name)
 
 bool DX11RE::Render()
 {
-	return false;
+	_direct3D->BeginScene(0.f, 0.f, 0.f, 1.f);
+
+	_camera->Render();
+
+	for (int i = 0; i < _renderTargets.size(); i++) {
+		if (!_renderTargets[i]->Render(this))
+			return false;
+	}
+
+
+	_direct3D->EndScene();
+
+	return true;
+
 }
 
 ID3D11ShaderResourceView* DX11RE::GetTexture(int id)
 {
-	return nullptr;
-	//return _textures[id]->GetTexture();
+	return _textures[id]->GetTexture();
+}
+
+bool DX11RE::CreateShaders()
+{
+	_textureShader = make_unique<TextureShaderClass>();
+
+	if (!_textureShader->Initialize()) {
+		return false;
+	}
+
+	return true;
+}
+
+bool DX11RE::CreateLegacyShaders()
+{
+
+	if (!CreateLegacyShader<DeferredShaderClass>(_hwnd, _deferredShader)) {
+		return false;
+	}
+
+	if (!CreateLegacyShader<LightShaderClass>(_hwnd, _lightShader)) {
+		return false;
+	}
+
+	if (!CreateLegacyShader<FontShaderClass>(_hwnd, _fontShader)) {
+		return false;
+	}
+
+	if (!CreateLegacyShader<FogShaderClass>(_hwnd, _fogShader)) {
+		return false;
+	}
+
+	if (!CreateLegacyShader<ClipPlaneShaderClass>(_hwnd, _clipPlaneShader)) {
+		return false;
+	}
+
+	if (!CreateLegacyShader<TranslateShaderClass>(_hwnd, _translateShader)) {
+		return false;
+	}
+
+	if (!CreateLegacyShader<TransparentShaderClass>(_hwnd, _transparentShader)) {
+		return false;
+	}
+
+	if (!CreateLegacyShader<ReflectionShaderClass>(_hwnd, _reflectionShader)) {
+		return false;
+	}
+
+	if (!CreateLegacyShader<WaterShaderClass>(_hwnd, _waterShader)) {
+		return false;
+	}
+
+	if (!CreateLegacyShader<RefractionShaderClass>(_hwnd, _refractionShader)) {
+		return false;
+	}
+
+	if (!CreateLegacyShader<GlassShaderClass>(_hwnd, _glassShader)) {
+		return false;
+	}
+
+	if (!CreateLegacyShader<FireShaderClass>(_hwnd, _fireShader)) {
+		return false;
+	}
+
+	if (!CreateLegacyShader<FadeShaderClass>(_hwnd, _fadeShader)) {
+		return false;
+	}
+
+	if (!CreateLegacyShader<ProjectionShaderClass>(_hwnd, _projectionShader)) {
+		return false;
+	}
+
+	if (!CreateLegacyShader<GlowShaderClass>(_hwnd, _glowShader)) {
+		return false;
+	}
+	/*
+	*/
+	if (!CreateLegacyShader<ShadowShaderClass>(_hwnd, _shadowShader)) {
+		return false;
+	}
+
+	if (!CreateLegacyShader<MultiLightShadowShaderClass>(_hwnd, _mShadowShader)) {
+		return false;
+	}
+
+	if (!CreateLegacyShader<DirectionalLightShadowShaderClass>(_hwnd, _dShadowShader)) {
+		return false;
+	}
+
+	if (!CreateLegacyShader<SoftShadowShaderClass>(_hwnd, _sShadowShader)) {
+		return false;
+	}
+
+	if (!CreateLegacyShader<DepthShaderClass>(_hwnd, _depthShader)) {
+		return false;
+	}
+
+	if (!CreateLegacyShader<TransparentDepthShaderClass>(_hwnd, _transparentDepthShader)) {
+		return false;
+	}
+
+	return true;
+
+}
+
+DX11RE::DX11RenderUnit::DX11RenderUnit()
+{
+
+}
+
+void DX11RE::DX11RenderUnit::Initialize(DX11RE* engine, const char* modelAddr, const char* materialAddr)
+{
+	_modelId = engine->RegisterModel(modelAddr);
+	_material = engine->RegisterMaterial(materialAddr);
+}
+
+bool DX11RE::DX11RenderUnit::Render(DX11RE* engine) {
+
+	int indexCount = engine->BindModel(_modelId);
+
+	_material->Render(engine, indexCount);
+
+	return true;
 }

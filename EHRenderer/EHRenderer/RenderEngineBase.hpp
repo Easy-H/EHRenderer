@@ -5,8 +5,9 @@ class ShaderBaseBase;
 
 class RenderEngineBase {
 public:
-	virtual bool Initialize(int screenWidth, int screenHeight) = 0;
+	virtual bool Initialize(int screenWidth, int screenHeight, bool fullscreen) = 0;
 
+	//virtual int RegisterMaterial(const char* addr) = 0;
 	virtual int RegisterModel(const char* addr) = 0;
 	virtual int RegisterTexture(const char* addr) = 0;
 	virtual int RegisterFont(const char* addr) = 0;

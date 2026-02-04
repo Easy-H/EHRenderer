@@ -4,7 +4,7 @@
 
 #include <fstream>
 
-bool Material::Initialize(RenderEngineBase* engine, char* addr)
+bool Material::Initialize(RenderEngineBase* engine, const char* addr)
 {
 	std::ifstream f(addr);
 
@@ -19,6 +19,7 @@ bool Material::Initialize(RenderEngineBase* engine, char* addr)
 	if (data.contains("textures"))
 	{
 		_textureCnt = data["textures"].size();
+		_textures = std::make_unique<int[]>(_textureCnt);
 
 		for (int i = 0; i < _textureCnt; i++)
 		{
