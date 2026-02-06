@@ -19,7 +19,7 @@ ShaderManagerClass::~ShaderManagerClass()
 bool ShaderManagerClass::Initialize(ID3D11Device* device, HWND hwnd) {
 	_textureShader = make_unique<TextureShaderClass>();
 
-	if (!_textureShader->Initialize()) {
+	if (!_textureShader->Initialize(device, hwnd)) {
 		return false;
 	}
 
@@ -43,7 +43,7 @@ bool ShaderManagerClass::RenderTextureShader(ID3D11DeviceContext* deviceContext,
 	XMMATRIX worldMatrix, XMMATRIX viewMatrix , XMMATRIX projectionMatrix,
 	ID3D11ShaderResourceView* texture)
 {
-	return _textureShader->Render(indexCount);
+	return _textureShader->Render(indexCount, nullptr);
 }
 
 bool ShaderManagerClass::RenderLightShader(ID3D11DeviceContext* deviceContext, int indexCount,

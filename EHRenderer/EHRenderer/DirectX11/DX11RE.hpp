@@ -112,7 +112,8 @@ public:
 
 	int BindModel(int id);
 
-	void RegisterRenderUnit(const char* modelAddr, const char* materialAddr);
+	virtual void RegisterRenderUnit(const char* modelAddr,
+		const char* materialAddr, const Transform* transform) override;
 
 	virtual ShaderBaseBase* GetShader(const char* name) override;
 
@@ -131,6 +132,8 @@ private:
 	bool CreateLegacyShaders();
 	bool CreateShaders();
 
+	template <typename T>
+	bool CreateShader(HWND, std::unique_ptr<T>&);
 	template <typename T>
 	bool CreateLegacyShader(HWND, std::unique_ptr<T>&);
 
@@ -218,6 +221,18 @@ private:
 	std::unique_ptr<DeferredBuffersClass> _deferredBuffers;
 
 };
+
+template<typename T>
+bool DX11RE::CreateShader(HWND hwnd, std::unique_ptr<T>& ptr)
+{
+	ptr = make_unique<T>();
+	if (!ptr->Initialize(_direct3D->GetDevice(), hwnd)) {
+		MessageBox(hwnd, "Error", "Error", MB_OK);
+		return false;
+	}
+	return true;
+}
+
 
 template<typename T>
 bool DX11RE::CreateLegacyShader(HWND hwnd, std::unique_ptr<T>& ptr)

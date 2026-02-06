@@ -84,7 +84,7 @@ bool BlurClass::BlurTexture(D3DClass* Direct3D, CameraClass* Camera, RenderTextu
 
 	_downSampleWindow->Render(Direct3D->GetDeviceContext());
 
-	result = TextureShader->Render(_downSampleWindow->GetIndexCount());
+	result = TextureShader->Render(_downSampleWindow->GetIndexCount(), nullptr);
 	if (!result)
 	{
 		return false;
@@ -140,7 +140,7 @@ bool BlurClass::BlurTexture(D3DClass* Direct3D, CameraClass* Camera, RenderTextu
 
 	_upSampleWindow->Render(Direct3D->GetDeviceContext());
 
-	if (!TextureShader->Render(_upSampleWindow->GetIndexCount()))
+	if (!TextureShader->Render(_upSampleWindow->GetIndexCount(), nullptr))
 	{
 		return false;
 	}

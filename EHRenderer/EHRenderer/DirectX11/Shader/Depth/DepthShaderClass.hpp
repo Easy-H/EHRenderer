@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../ShaderBase.hpp"
+#include "../DX11ShaderBase.hpp"
 
 #include <directxmath.h>
 #include <fstream>
@@ -10,7 +10,7 @@ using namespace DirectX;
 using namespace std;
 using namespace Microsoft::WRL;
 
-class DepthShaderClass : public ShaderBase {
+class DepthShaderClass : public DX11ShaderBase {
 private:
 	struct MatrixBufferType {
 		XMMATRIX world;
@@ -23,9 +23,9 @@ public:
 	DepthShaderClass(const DepthShaderClass&);
 	~DepthShaderClass();
 
-	virtual bool Initialize(ID3D11Device*, HWND) override;
+	virtual bool Initialize(ID3D11Device* device, HWND hwnd) override;
+	virtual bool Render(int indexCount, const Transform* position) override;
 	void Shutdown();
-	bool Render(ID3D11DeviceContext*, int, XMMATRIX, XMMATRIX, XMMATRIX);
 
 private:
 	bool InitializeShader(ID3D11Device*, HWND, WCHAR*, WCHAR*);

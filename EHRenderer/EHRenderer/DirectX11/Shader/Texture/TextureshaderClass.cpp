@@ -16,16 +16,13 @@ TextureShaderClass::~TextureShaderClass()
 }
 
 
-bool TextureShaderClass::Initialize()
+bool TextureShaderClass::Initialize(ID3D11Device* device, HWND hwnd)
 {
 	wchar_t vsFilename[128];
 	if (wcscpy_s(vsFilename, 128, L"./HLSL/Texture/Texture.vs") != 0) return false;
 
 	wchar_t psFilename[128];
 	if (wcscpy_s(psFilename, 128, L"./HLSL/Texture/Texture.ps") != 0) return false;
-
-	ID3D11Device* device = DX11RE::GetInstance().GetDevice();
-	HWND hwnd = DX11RE::GetInstance().GetHWND();
 
 	return InitializeShader(device, hwnd, vsFilename, psFilename);
 }
@@ -34,7 +31,7 @@ void TextureShaderClass::Shutdown() {
 	ShutdownShader();
 }
 
-bool TextureShaderClass::Render(int indexCount)
+bool TextureShaderClass::Render(int indexCount, const Transform* position)
 {
 	ID3D11DeviceContext* deviceContext = DX11RE::GetInstance().GetDeviceContext();
 
@@ -43,7 +40,9 @@ bool TextureShaderClass::Render(int indexCount)
 	DX11RE::GetInstance().GetView(viewMatrix);
 	DX11RE::GetInstance().GetProjection(projectionMatrix);
 
-	XMMATRIX worldMatrix = XMMatrixTranslation(0.f, 0.f, 0.f);
+	XMMATRIX worldMatrix;
+	
+	GetXMMATRIX(position, worldMatrix);
 
 	if (!SetShaderParameters(deviceContext,
 		worldMatrix, viewMatrix, projectionMatrix)) return false;

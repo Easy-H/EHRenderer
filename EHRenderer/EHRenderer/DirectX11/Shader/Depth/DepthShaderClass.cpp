@@ -1,4 +1,5 @@
 #include "DepthShaderClass.hpp"
+#include "../../DX11RE.hpp"
 
 #include <d3dcompiler.h>
 
@@ -29,9 +30,17 @@ void DepthShaderClass::Shutdown() {
 	ShutdownShader();
 }
 
-bool DepthShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount,
-	XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix)
+bool DepthShaderClass::Render(int indexCount, const Transform* position)
 {
+	ID3D11DeviceContext* deviceContext = DX11RE::GetInstance().GetDeviceContext();
+
+	XMMATRIX viewMatrix, projectionMatrix;
+
+	DX11RE::GetInstance().GetView(viewMatrix);
+	DX11RE::GetInstance().GetProjection(projectionMatrix);
+
+	XMMATRIX worldMatrix;
+
 	if (!SetShaderParameters(deviceContext,
 		worldMatrix, viewMatrix, projectionMatrix)) return false;
 

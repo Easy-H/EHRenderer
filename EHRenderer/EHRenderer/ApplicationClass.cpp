@@ -27,9 +27,9 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	DX11RE::GetInstance().Initialize(screenWidth, screenHeight, FULL_SCREEN);
 	
 	DX11RE::GetInstance().RegisterRenderUnit(
-		"./Assets/models/cube.txt", "./Assets/materials/mat.json");
+		"./Assets/models/cube.txt", "./Assets/materials/mat.json", nullptr);
 	DX11RE::GetInstance().RegisterRenderUnit(
-		"./Assets/models/floor.txt", "./Assets/materials/mat.json");
+		"./Assets/models/floor.txt", "./Assets/materials/mat.json", nullptr);
 	/*
 	_direct3D = std::make_unique<D3DClass>();
 	_direct3D->Initialize(screenWidth, screenHeight, VSYNC_ENABLED, hwnd, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR);

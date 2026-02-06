@@ -204,7 +204,7 @@ int DX11RE::BindModel(int id)
 	return _models[id]->GetIndexCount();
 }
 
-void DX11RE::RegisterRenderUnit(const char* modelAddr, const char* materialAddr)
+void DX11RE::RegisterRenderUnit(const char* modelAddr, const char* materialAddr, const Transform* transform)
 {
 	std::unique_ptr<DX11RenderUnit> unit = std::make_unique<DX11RenderUnit>();
 	
@@ -243,9 +243,15 @@ ID3D11ShaderResourceView* DX11RE::GetTexture(int id)
 
 bool DX11RE::CreateShaders()
 {
-	_textureShader = make_unique<TextureShaderClass>();
+	if (!CreateShader<TextureShaderClass>(_hwnd, _textureShader)) {
+		return false;
+	}
 
-	if (!_textureShader->Initialize()) {
+	if (!CreateShader<DepthShaderClass>(_hwnd, _depthShader)) {
+		return false;
+	}
+
+	if (!CreateShader<TransparentDepthShaderClass>(_hwnd, _transparentDepthShader)) {
 		return false;
 	}
 
@@ -332,14 +338,6 @@ bool DX11RE::CreateLegacyShaders()
 		return false;
 	}
 
-	if (!CreateLegacyShader<DepthShaderClass>(_hwnd, _depthShader)) {
-		return false;
-	}
-
-	if (!CreateLegacyShader<TransparentDepthShaderClass>(_hwnd, _transparentDepthShader)) {
-		return false;
-	}
-
 	return true;
 
 }
@@ -359,7 +357,7 @@ bool DX11RE::DX11RenderUnit::Render(DX11RE* engine) {
 
 	int indexCount = engine->BindModel(_modelId);
 
-	_material->Render(engine, indexCount);
+	_material->Render(engine, indexCount, nullptr);
 
 	return true;
 }

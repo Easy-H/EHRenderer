@@ -34,13 +34,13 @@ bool Material::Initialize(RenderEngineBase* engine, const char* addr)
 
 }
 
-bool Material::Render(RenderEngineBase* engine, int indexCount)
+bool Material::Render(RenderEngineBase* engine, int indexCount, const Transform* position)
 {
 	for (int i = 0; i < _textureCnt; i++)
 	{
 		_shader->BindTexture(i, _textures[i]);
 	}
 	
-	return _shader->Render(indexCount);
+	return _shader->Render(indexCount, position);
 
 }

@@ -1,4 +1,5 @@
 #include "TransparentDepthShaderClass.hpp"
+#include "../../DX11RE.hpp"
 
 #include <d3dcompiler.h>
 
@@ -29,12 +30,21 @@ void TransparentDepthShaderClass::Shutdown() {
 	ShutdownShader();
 }
 
-bool TransparentDepthShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount,
-	XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix,
-	ID3D11ShaderResourceView* texture)
+bool TransparentDepthShaderClass::Render(int indexCount, const Transform* position)
 {
+	ID3D11DeviceContext* deviceContext = DX11RE::GetInstance().GetDeviceContext();
+
+	XMMATRIX viewMatrix, projectionMatrix;
+
+	DX11RE::GetInstance().GetView(viewMatrix);
+	DX11RE::GetInstance().GetProjection(projectionMatrix);
+
+	XMMATRIX worldMatrix;
+
+	GetXMMATRIX(position, worldMatrix);
+
 	if (!SetShaderParameters(deviceContext,
-		worldMatrix, viewMatrix, projectionMatrix, texture)) return false;
+		worldMatrix, viewMatrix, projectionMatrix)) return false;
 
 	RenderShader(deviceContext, indexCount);
 	return true;
@@ -128,8 +138,7 @@ void TransparentDepthShaderClass::ShutdownShader()
 }
 
 bool TransparentDepthShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext,
-	XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix,
-	ID3D11ShaderResourceView* texture) {
+	XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix) {
 
 	worldMatrix = XMMatrixTranspose(worldMatrix);
 	viewMatrix = XMMatrixTranspose(viewMatrix);
@@ -150,8 +159,6 @@ bool TransparentDepthShaderClass::SetShaderParameters(ID3D11DeviceContext* devic
 	unsigned int bufferNumber = 0;
 
 	deviceContext->VSSetConstantBuffers(bufferNumber, 1, _matrixBuffer.GetAddressOf());
-
-	deviceContext->PSSetShaderResources(0, 1, &texture);
 
 	return true;
 }

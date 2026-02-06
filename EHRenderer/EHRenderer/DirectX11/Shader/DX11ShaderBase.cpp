@@ -1,6 +1,7 @@
 #include "DX11ShaderBase.hpp"
 #include "../DX11RE.hpp"
 #include <fstream>
+#include "../../Data/Transform.hpp"
 
 using namespace std;
 
@@ -29,6 +30,16 @@ void DX11ShaderBase::OutputShaderErrorMessage(ID3D10Blob* errorMessage, HWND hwn
 
 	MessageBoxW(hwnd, L"Error compiling shader. Check shader-error.txt for message.", filename, MB_OK);
 
+}
+
+void DX11ShaderBase::GetXMMATRIX(const Transform* position, XMMATRIX& matrix)
+{
+	if (position == nullptr) {
+		matrix = XMMatrixTranslation(0.f, 0.f, 0.f);
+		return;
+	}
+
+	matrix = XMMatrixTranslation(position->positionX, position->positionY, position->positionZ);
 }
 
 bool DX11ShaderBase::CreateConstantBuffer(ID3D11Device* device, unsigned int size, ID3D11Buffer** target)

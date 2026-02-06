@@ -20,8 +20,8 @@ public:
 	AlphaMapShaderClass(const AlphaMapShaderClass&);
 	~AlphaMapShaderClass();
 
-	virtual bool Initialize() override;
-	virtual bool Render(int) override;
+	virtual bool Initialize(ID3D11Device* device, HWND hwnd) override;
+	virtual bool Render(int indexCount, const Transform* position) override;
 
 private:
 	bool InitializeShader(ID3D11Device*, HWND, WCHAR*, WCHAR*);

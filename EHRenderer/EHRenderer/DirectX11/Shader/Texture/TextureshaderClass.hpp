@@ -23,8 +23,8 @@ public:
 	TextureShaderClass(const TextureShaderClass&);
 	~TextureShaderClass();
 
-	virtual bool Initialize() override;
-	virtual bool Render(int indexCount) override;
+	virtual bool Initialize(ID3D11Device* device, HWND hwnd) override;
+	virtual bool Render(int indexCount, const Transform* position) override;
 	void Shutdown();
 
 private:
