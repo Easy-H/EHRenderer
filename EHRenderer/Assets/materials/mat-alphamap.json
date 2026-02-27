@@ -1,0 +1,8 @@
+{
+    "shader": "alphamap",
+    "textures" : [
+        "./Assets/textures/stone01.tga",
+        "./Assets/textures/dirt01.tga",
+        "./Assets/textures/alpha01.tga"
+    ]
+}

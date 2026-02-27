@@ -13,6 +13,23 @@ void DX11ShaderBase::BindTexture(int slot, int textureId)
 	deviceContext->PSSetShaderResources(slot, 1, &texture);
 }
 
+void DX11ShaderBase::GetSlot(const std::string& name, int& slotId, size_t& size)
+{
+}
+
+void DX11ShaderBase::SetSlot(int slotId, int slotOffset, void* valuePtr, size_t size)
+{
+}
+
+int DX11ShaderBase::GetSlotCnt()
+{
+	return 0;
+}
+
+void DX11ShaderBase::ResetSlot(int slotId, size_t size)
+{
+}
+
 void DX11ShaderBase::OutputShaderErrorMessage(ID3D10Blob* errorMessage, HWND hwnd, WCHAR* filename)
 {
 

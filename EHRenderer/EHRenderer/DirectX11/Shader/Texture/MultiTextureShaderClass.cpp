@@ -1,4 +1,5 @@
 #include "MultiTextureShaderClass.hpp"
+#include "../../DX11RE.hpp"
 
 #include <d3dcompiler.h>
 #include <fstream>
@@ -32,6 +33,26 @@ bool MultiTextureShaderClass::Initialize(ID3D11Device* device, HWND hwnd)
 	}
 
 	return InitializeShader(device, hwnd, vsFilename, psFilename);
+}
+
+bool MultiTextureShaderClass::Render(int indexCount, const Transform* position)
+{
+	ID3D11DeviceContext* deviceContext = DX11RE::GetInstance().GetDeviceContext();
+
+	XMMATRIX viewMatrix, projectionMatrix;
+
+	DX11RE::GetInstance().GetView(viewMatrix);
+	DX11RE::GetInstance().GetProjection(projectionMatrix);
+	XMMATRIX worldMatrix;
+
+	GetXMMATRIX(position, worldMatrix);
+
+	if (!SetShaderParameters(deviceContext, worldMatrix, viewMatrix, projectionMatrix))
+		return false;
+
+	RenderShader(deviceContext, indexCount);
+
+	return true;
 }
 
 bool MultiTextureShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd,
@@ -119,21 +140,8 @@ bool MultiTextureShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd,
 	return true;
 }
 
-bool MultiTextureShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount,
-	XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix,
-	ID3D11ShaderResourceView* texture1, ID3D11ShaderResourceView* texture2)
-{
-	if (!SetShaderParameters(deviceContext, worldMatrix, viewMatrix, projectionMatrix, texture1, texture2))
-		return false;
-
-	RenderShader(deviceContext, indexCount);
-
-	return true;
-}
-
 bool MultiTextureShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext,
-	XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix,
-	ID3D11ShaderResourceView* texture1, ID3D11ShaderResourceView* texture2)
+	XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix)
 {
 
 	worldMatrix = XMMatrixTranspose(worldMatrix);
@@ -154,9 +162,6 @@ bool MultiTextureShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceCon
 
 	unsigned int bufferNumber = 0;
 	deviceContext->VSSetConstantBuffers(bufferNumber, 1, _matrixBuffer.GetAddressOf());
-
-	deviceContext->PSSetShaderResources(0, 1, &texture1);
-	deviceContext->PSSetShaderResources(1, 1, &texture2);
 
 	return true;
 }

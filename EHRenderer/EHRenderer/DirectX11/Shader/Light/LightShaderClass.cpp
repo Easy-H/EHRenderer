@@ -1,4 +1,6 @@
 #include "LightShaderClass.hpp"
+#include "../../DX11RE.hpp"
+#include "../../Object/LightClass.hpp"
 #include <d3dcompiler.h>
 #include <fstream>
 
@@ -25,13 +27,24 @@ bool LightShaderClass::Initialize(ID3D11Device* device, HWND hwnd)
 	return InitializeShader(device, hwnd, vsFilename, psFilename);
 }
 
-bool LightShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount,
-	XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix,
-	ID3D11ShaderResourceView* colorTexture, ID3D11ShaderResourceView* normalTexture, XMFLOAT3 lightDirection)
+bool LightShaderClass::Render(int indexCount, const Transform* position)
 {
+	ID3D11DeviceContext* deviceContext = DX11RE::GetInstance().GetDeviceContext();
+
+	XMMATRIX viewMatrix, projectionMatrix;
+
+	DX11RE::GetInstance().GetView(viewMatrix);
+	DX11RE::GetInstance().GetProjection(projectionMatrix);
+	XMMATRIX worldMatrix;
+
+	GetXMMATRIX(position, worldMatrix);
+
+	LightClass* light = DX11RE::GetInstance().GetLights(0);
+
+	XMFLOAT3 lightDirection = light->GetDirection();
+
 	if (!SetShaderParameters(deviceContext,
-		worldMatrix, viewMatrix, projectionMatrix,
-		colorTexture, normalTexture, lightDirection)) return false;
+		worldMatrix, viewMatrix, projectionMatrix, lightDirection)) return false;
 
 	RenderShader(deviceContext, indexCount);
 	return true;
@@ -131,8 +144,7 @@ bool LightShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* 
 }
 
 bool LightShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext,
-	XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix,
-	ID3D11ShaderResourceView* colorTexture, ID3D11ShaderResourceView* normalTexture, XMFLOAT3 lightDirection)
+	XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix, XMFLOAT3 lightDirection)
 {
 
 	worldMatrix = XMMatrixTranspose(worldMatrix);
@@ -166,9 +178,6 @@ bool LightShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext,
 
 	bufferNumber = 0;
 	deviceContext->PSSetConstantBuffers(bufferNumber, 1, _lightBuffer.GetAddressOf());
-
-	deviceContext->PSSetShaderResources(0, 1, &colorTexture);
-	deviceContext->PSSetShaderResources(1, 1, &normalTexture);
 
 	return true;
 }

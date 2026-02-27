@@ -1,0 +1,74 @@
+[
+    {
+        "name": "texture",
+        "type": "DX11Shader",
+        "VS": {
+            "HLSL": "./Assets/shader/HLSL/Texture/Texture.vs",
+            "Func": "TextureVertexShader"
+        },
+        "PS": {
+            "HLSL": "./Assets/shader/HLSL/Texture/Texture.ps",
+            "Func": "TexturePixelShader"
+        }
+    },
+    {
+        "name": "multitexture",
+        "type": "DX11Shader",
+        "VS": {
+            "HLSL": "./Assets/shader/HLSL/Texture/MultiTexture.vs",
+            "Func": "MultiTextureVertexShader"
+        },
+        "PS": {
+            "HLSL": "./Assets/shader/HLSL/Texture/MultiTexture.ps",
+            "Func": "MultiTexturePixelShader"
+        }
+    },
+    {
+        "name": "depth",
+        "type": "DX11Shader",
+        "VS": {
+            "HLSL": "./Assets/shader/HLSL/Depth.vs",
+            "Func": "DepthVertexShader"
+        },
+        "PS": {
+            "HLSL": "./Assets/shader/HLSL/Depth.ps",
+            "Func": "DepthPixelShader"
+        }
+    },
+    {
+        "name": "clipplane",
+        "type": "DX11Shader",
+        "VS": {
+            "HLSL": "./Assets/shader/HLSL/ClipPlane.vs",
+            "Func": "ClipPlaneVertexShader"
+        },
+        "PS": {
+            "HLSL": "./Assets/shader/HLSL/ClipPlane.ps",
+            "Func": "ClipPlanePixelShader"
+        }
+    },
+    {
+        "name": "alphamap",
+        "type": "DX11Shader",
+        "VS": {
+            "HLSL": "./Assets/shader/HLSL/Alphamap.vs",
+            "Func": "AlphaMapVertexShader"
+        },
+        "PS": {
+            "HLSL": "./Assets/shader/HLSL/Alphamap.ps",
+            "Func": "AlphaMapPixelShader"
+        }
+    },
+    {
+        "name": "fade",
+        "type": "DX11Shader",
+        "VS": {
+            "HLSL": "./Assets/shader/HLSL/Fade.vs",
+            "Func": "FadeVertexShader"
+        },
+        "PS": {
+            "HLSL": "./Assets/shader/HLSL/Fade.ps",
+            "Func": "FadePixelShader"
+        }
+    }
+]

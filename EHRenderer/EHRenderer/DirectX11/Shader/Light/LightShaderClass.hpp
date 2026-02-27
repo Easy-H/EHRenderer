@@ -2,7 +2,7 @@
 
 const int NUM_LIGHTS = 4;
 
-#include "../ShaderBase.hpp"
+#include "../DX11ShaderBase.hpp"
 #include <directxmath.h>
 #include <wrl.h>
 
@@ -10,7 +10,7 @@ using namespace DirectX;
 using namespace std;
 using namespace Microsoft::WRL;
 
-class LightShaderClass : public ShaderBase {
+class LightShaderClass : public DX11ShaderBase {
 private:
 	struct MatrixBufferType
 	{
@@ -29,13 +29,11 @@ public:
 	~LightShaderClass();
 	
 	bool Initialize(ID3D11Device*, HWND);
-	bool Render(ID3D11DeviceContext*, int, XMMATRIX, XMMATRIX, XMMATRIX,
-		ID3D11ShaderResourceView*, ID3D11ShaderResourceView*, XMFLOAT3);
+	virtual bool Render(int indexCount, const Transform* position) override;
 private:
 	bool InitializeShader(ID3D11Device*, HWND, WCHAR*, WCHAR*);
 	
-	bool SetShaderParameters(ID3D11DeviceContext*, XMMATRIX, XMMATRIX, XMMATRIX,
-		ID3D11ShaderResourceView*, ID3D11ShaderResourceView*, XMFLOAT3); 
+	bool SetShaderParameters(ID3D11DeviceContext*, XMMATRIX, XMMATRIX, XMMATRIX, XMFLOAT3); 
 	void RenderShader(ID3D11DeviceContext*, int);
 
 	ComPtr<ID3D11VertexShader> _vertexShader;

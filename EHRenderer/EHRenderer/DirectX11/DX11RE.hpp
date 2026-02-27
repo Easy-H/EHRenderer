@@ -28,17 +28,14 @@ class SimpleModelClass;
 
 class SpriteClass;
 
+class ShaderBaseBase;
 class DeferredShaderClass;
 class ColorShaderClass;
-class TextureShaderClass;
-class MultiTextureShaderClass;
-class AlphaMapShaderClass;
 class SpecMapShaderClass;
 class LightMapShaderClass;
 class LightShaderClass;
 class FontShaderClass;
 class FogShaderClass;
-class ClipPlaneShaderClass;
 class TranslateShaderClass;
 class TransparentShaderClass;
 class ReflectionShaderClass;
@@ -46,7 +43,6 @@ class WaterShaderClass;
 class RefractionShaderClass;
 class GlassShaderClass;
 class FireShaderClass;
-class FadeShaderClass;
 class ProjectionShaderClass;
 class ShadowShaderClass;
 class MultiLightShadowShaderClass;
@@ -57,7 +53,6 @@ class SsaoShaderClass;
 class SsaoBlurShaderClass;
 class GBufferShaderClass;
 
-class DepthShaderClass;
 class TransparentDepthShaderClass;
 
 class FontClass;
@@ -91,7 +86,7 @@ private:
 	class DX11RenderUnit {
 	public:
 		DX11RenderUnit();
-		void Initialize(DX11RE* engine, const char* modelAddr, const char* materialAddr);
+		void Initialize(DX11RE* engine, const std::string& modelAddr, const std::string& materialAddr);
 		bool Render(DX11RE* engine);
 	private:
 		Material* _material;
@@ -105,17 +100,17 @@ public:
 	void SetHWND(HWND hwnd) { _hwnd = hwnd; }
 	virtual bool Initialize(int screenWidth, int screenHeight, bool fullscreen) override;
 
-	Material* RegisterMaterial(const char* addr);
-	virtual int RegisterModel(const char* addr) override;
-	virtual int RegisterTexture(const char* addr) override;
-	virtual int RegisterFont(const char* addr) override;
+	Material* RegisterMaterial(const std::string& addr);
+	virtual int RegisterModel(const std::string& addr) override;
+	virtual int RegisterTexture(const std::string& addr) override;
+	virtual int RegisterFont(const std::string& addr) override;
 
 	int BindModel(int id);
 
-	virtual void RegisterRenderUnit(const char* modelAddr,
-		const char* materialAddr, const Transform* transform) override;
+	virtual void RegisterRenderUnit(const std::string& modelAddr,
+		const std::string& materialAddr, const Transform* transform) override;
 
-	virtual ShaderBaseBase* GetShader(const char* name) override;
+	virtual ShaderBaseBase* GetShader(const std::string& name) override;
 
 	virtual bool Render() override;
 
@@ -123,6 +118,7 @@ public:
 
 	void GetView(XMMATRIX& viewMatrix);
 	void GetProjection(XMMATRIX& projectionMatrix);
+	LightClass* GetLights(int idx) { return _lights[idx].get(); }
 
 	ID3D11Device* GetDevice();
 	ID3D11DeviceContext* GetDeviceContext();
@@ -142,12 +138,13 @@ private:
 	std::unique_ptr<D3DClass> _direct3D;
 	std::unique_ptr<CameraClass> _camera;
 
-	std::unordered_map<const char*, unique_ptr<Material>> _materialMap;
+	std::unordered_map<std::string, unique_ptr<Material>> _materialMap;
+	std::unordered_map<std::string, unique_ptr<ShaderBaseBase>> _shaderMap;
 
-	std::unordered_map<const char*, int> _modelMap;
+	std::unordered_map<std::string, int> _modelMap;
 	std::vector<std::unique_ptr<ModelClass>> _models;
 
-	std::unordered_map<const char*, int> _textureMap;
+	std::unordered_map<std::string, int> _textureMap;
 	std::vector<std::unique_ptr<TextureClass>> _textures;
 
 	HWND _hwnd;
@@ -167,14 +164,10 @@ private:
 	std::unique_ptr<SpriteClass> _sprite;
 
 	std::unique_ptr<ColorShaderClass> _colorShader;
-	std::unique_ptr<TextureShaderClass> _textureShader;
-	std::unique_ptr<MultiTextureShaderClass> _multiTextureShader;
-	std::unique_ptr<AlphaMapShaderClass> _alphaMapShader;
 	std::unique_ptr<SpecMapShaderClass> _specMapShader;
 	std::unique_ptr<LightMapShaderClass> _lightMapShader;
 	std::unique_ptr<LightShaderClass> _lightShader;
 	std::unique_ptr<FogShaderClass> _fogShader;
-	std::unique_ptr<ClipPlaneShaderClass> _clipPlaneShader;
 	std::unique_ptr<TranslateShaderClass> _translateShader;
 	std::unique_ptr<TransparentShaderClass> _transparentShader;
 	std::unique_ptr<ReflectionShaderClass> _reflectionShader;
@@ -182,7 +175,6 @@ private:
 	std::unique_ptr<RefractionShaderClass> _refractionShader;
 	std::unique_ptr<GlassShaderClass> _glassShader;
 	std::unique_ptr<FireShaderClass> _fireShader;
-	std::unique_ptr<FadeShaderClass> _fadeShader;
 	std::unique_ptr<ProjectionShaderClass> _projectionShader;
 	std::unique_ptr<GlowShaderClass> _glowShader;
 
@@ -195,7 +187,6 @@ private:
 	std::unique_ptr<SsaoShaderClass> _ssaoShader;
 	std::unique_ptr<GBufferShaderClass> _gBufferShader;
 
-	std::unique_ptr<DepthShaderClass> _depthShader;
 	std::unique_ptr<TransparentDepthShaderClass> _transparentDepthShader;
 
 	std::unique_ptr<FontShaderClass> _fontShader;
@@ -203,7 +194,7 @@ private:
 	std::unique_ptr<FontClass> _font;
 	//std::unique_ptr<TextClass[]> _textStrings;
 
-	std::unique_ptr<LightClass[]> _lights;
+	std::vector<std::unique_ptr<LightClass>> _lights;
 
 	std::unique_ptr<PositionClass> _position;
 	std::unique_ptr<FrustumClass> _frustum;

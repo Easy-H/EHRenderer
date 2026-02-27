@@ -11,6 +11,10 @@ public:
 	virtual bool Initialize(ID3D11Device* device, HWND hwnd) = 0;
 	virtual ~DX11ShaderBase() {}
 	virtual void BindTexture(int slot, int textureId) override;
+	virtual void GetSlot(const std::string& name, int& slotId, size_t& size) override;
+	virtual void SetSlot(int slotId, int slotOffset, void* valuePtr, size_t size) override;
+	virtual int GetSlotCnt() override;
+	virtual void ResetSlot(int slotId, size_t size) override;
 
 protected:
 	void OutputShaderErrorMessage(ID3D10Blob* erroMessage, HWND hwnd, WCHAR* filename);

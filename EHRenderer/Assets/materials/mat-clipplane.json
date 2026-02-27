@@ -1,0 +1,15 @@
+{
+    "shader": "clipplane",
+    "textures" : [
+        "./Assets/textures/fire01.tga"
+    ],
+    "property" : [
+        {
+            "name": "ClipPlaneBuffer",
+            "value": [{
+                "type": "float4",
+                "value": [ 0, 0, 0.5, 0.5]
+            }]
+        }
+    ]
+}

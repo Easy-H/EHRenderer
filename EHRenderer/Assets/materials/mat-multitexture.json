@@ -1,0 +1,7 @@
+{
+    "shader": "multitexture",
+    "textures" : [
+        "./Assets/textures/fire01.tga",
+        "./Assets/textures/stone01.tga"
+    ]
+}

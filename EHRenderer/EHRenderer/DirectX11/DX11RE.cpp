@@ -1,5 +1,6 @@
 #include "DX11RE.hpp"
 #include <string.h>
+#include "../../External/json.hpp"
 
 #include "d3dclass.hpp"
 
@@ -16,10 +17,8 @@
 #include "Data/TextClass.hpp"
 
 #include "ShaderManager.hpp"
+#include "Shader/DX11Shader.hpp"
 #include "Shader/Color/ColorShaderClass.hpp"
-#include "Shader/Texture/TextureShaderClass.hpp"
-#include "Shader/Texture/MultiTextureShaderClass.hpp"
-#include "Shader/AlphaMap/AlphaMapShaderClass.hpp"
 #include "Shader/NormalMap/NormalMapShaderClass.hpp"
 #include "Shader/SpecMap/SpecMapShaderClass.hpp"
 #include "Shader/LightMap/LightMapShaderClass.hpp"
@@ -34,7 +33,6 @@
 #include "Shader/Refraction/RefractionShaderClass.hpp"
 #include "Shader/Glass/GlassShaderClass.hpp"
 #include "Shader/Fire/FireShaderClass.hpp"
-#include "Shader/Fade/FadeShaderClass.hpp"
 #include "Shader/Projection/ProjectionShaderClass.hpp"
 #include "Shader/Glow/GlowShaderClass.hpp"
 #include "Shader/Deferred/DeferredShaderClass.hpp"
@@ -121,27 +119,27 @@ bool DX11RE::Initialize(int screenWidth, int screenHeight, bool fullscreen)
 
 	_numLights = 2;
 
-	_lights = make_unique<LightClass[]>(_numLights);
+	_lights.push_back(make_unique<LightClass>());
+	_lights.push_back(make_unique<LightClass>());
 
-	_lights[0].SetAmbientColor(0.15f, 0.15f, 0.15f, 1.f);
-	_lights[0].SetDiffuseColor(1.0f, 1.f, 1.f, 1.f);
-	_lights[0].SetPosition(5.f, 8.f, -5.f);
-	_lights[0].SetOrthoParameters(20.f, 1.f, 50.f);
-	_lights[0].SetLookAt(0, 0, 0);
-	_lights[0].SetProjectionParameters(3.141592 / 2.f, 1.f, SCREEN_NEAR, SCREEN_DEPTH);
-	_lights[0].SetDirection(1.0f, -1.0f, 0.2f);
+	_lights[0]->SetAmbientColor(0.15f, 0.15f, 0.15f, 1.f);
+	_lights[0]->SetDiffuseColor(1.0f, 1.f, 1.f, 1.f);
+	_lights[0]->SetPosition(5.f, 8.f, -5.f);
+	_lights[0]->SetOrthoParameters(20.f, 1.f, 50.f);
+	_lights[0]->SetLookAt(0, 0, 0);
+	_lights[0]->SetProjectionParameters(3.141592 / 2.f, 1.f, SCREEN_NEAR, SCREEN_DEPTH);
+	_lights[0]->SetDirection(1.0f, -1.0f, 0.2f);
 
-	_lights[1].SetAmbientColor(0.15f, 0.15f, 0.15f, 1.f);
-	_lights[1].SetDiffuseColor(1.0f, 1.f, 1.f, 1.f);
-	_lights[1].SetPosition(-5.f, 8.f, -5.f);
-	_lights[1].SetProjectionParameters(3.141592 / 2.f, 1.f, SCREEN_NEAR, SCREEN_DEPTH);
-
-	_lights[1].SetLookAt(0, 0, 0);
+	_lights[1]->SetAmbientColor(0.15f, 0.15f, 0.15f, 1.f);
+	_lights[1]->SetDiffuseColor(1.0f, 1.f, 1.f, 1.f);
+	_lights[1]->SetPosition(-5.f, 8.f, -5.f);
+	_lights[1]->SetProjectionParameters(3.141592 / 2.f, 1.f, SCREEN_NEAR, SCREEN_DEPTH);
+	_lights[1]->SetLookAt(0, 0, 0);
 
 	return true;
 }
 
-Material* DX11RE::RegisterMaterial(const char* addr)
+Material* DX11RE::RegisterMaterial(const std::string& addr)
 {
 	if (_materialMap.contains(addr)) {
 
@@ -157,7 +155,7 @@ Material* DX11RE::RegisterMaterial(const char* addr)
 	return _materialMap[addr].get();
 }
 
-int DX11RE::RegisterModel(const char* addr)
+int DX11RE::RegisterModel(const std::string& addr)
 {
 	if (_modelMap.contains(addr)) {
 
@@ -168,14 +166,14 @@ int DX11RE::RegisterModel(const char* addr)
 
 	std::unique_ptr<ModelClass> model = std::make_unique<ModelClass>();
 
-	model->Initialize(addr);
+	model->Initialize(addr.c_str());
 
 	_models.push_back(std::move(model));
 
 	return _modelMap[addr];
 }
 
-int DX11RE::RegisterTexture(const char* addr)
+int DX11RE::RegisterTexture(const std::string& addr)
 {
 	if (_textureMap.contains(addr)) {
 
@@ -186,14 +184,14 @@ int DX11RE::RegisterTexture(const char* addr)
 
 	std::unique_ptr<TextureClass> texture = std::make_unique<TextureClass>();
 
-	texture->Initialize(_direct3D->GetDevice(), _direct3D->GetDeviceContext(), addr);
+	texture->Initialize(_direct3D->GetDevice(), _direct3D->GetDeviceContext(), addr.c_str());
 
 	_textures.push_back(std::move(texture));
 
 	return _textureMap[addr];
 }
 
-int DX11RE::RegisterFont(const char* addr)
+int DX11RE::RegisterFont(const std::string& addr)
 {
 	return 0;
 }
@@ -204,7 +202,7 @@ int DX11RE::BindModel(int id)
 	return _models[id]->GetIndexCount();
 }
 
-void DX11RE::RegisterRenderUnit(const char* modelAddr, const char* materialAddr, const Transform* transform)
+void DX11RE::RegisterRenderUnit(const std::string& modelAddr, const std::string& materialAddr, const Transform* transform)
 {
 	std::unique_ptr<DX11RenderUnit> unit = std::make_unique<DX11RenderUnit>();
 	
@@ -213,9 +211,9 @@ void DX11RE::RegisterRenderUnit(const char* modelAddr, const char* materialAddr,
 	_renderTargets.push_back(std::move(unit));
 }
 
-ShaderBaseBase* DX11RE::GetShader(const char* name)
+ShaderBaseBase* DX11RE::GetShader(const std::string& name)
 {
-	return _textureShader.get();
+	return _shaderMap[name].get();
 }
 
 bool DX11RE::Render()
@@ -243,16 +241,43 @@ ID3D11ShaderResourceView* DX11RE::GetTexture(int id)
 
 bool DX11RE::CreateShaders()
 {
-	if (!CreateShader<TextureShaderClass>(_hwnd, _textureShader)) {
-		return false;
-	}
-
-	if (!CreateShader<DepthShaderClass>(_hwnd, _depthShader)) {
-		return false;
-	}
+	std::ifstream f("./Assets/shader/shaders.json");
 
 	if (!CreateShader<TransparentDepthShaderClass>(_hwnd, _transparentDepthShader)) {
 		return false;
+	}
+
+	nlohmann::json data = nlohmann::json::parse(f);
+	
+	for (int i = 0; i < data.size(); i++) {
+		std::string name = data[i]["name"].get<std::string>();
+
+		nlohmann::json vs = data[i]["VS"];
+
+		std::string vsFilenameRaw = vs["HLSL"].get<std::string>();
+		std::wstring vsFilename;
+		vsFilename.assign(vsFilenameRaw.begin(), vsFilenameRaw.end());
+
+		std::string vsFunc = vs["Func"].get<std::string>();
+
+		nlohmann::json ps = data[i]["PS"];
+		std::string psFilenameRaw = ps["HLSL"].get<std::string>();
+		std::wstring psFilename;
+		psFilename.assign(psFilenameRaw.begin(), psFilenameRaw.end());
+
+		std::string psFunc = ps["Func"].get<std::string>();
+
+		std::unique_ptr<DX11Shader> shader = std::make_unique<DX11Shader>();
+
+		shader->SetTargetVS(const_cast<wchar_t*>(vsFilename.data()), vsFunc.c_str());
+		shader->SetTargetPS(const_cast<wchar_t*>(psFilename.data()), psFunc.c_str());
+		
+		if (!shader->Initialize(_direct3D->GetDevice(), _hwnd)) {
+			return false;
+		}
+
+		_shaderMap[name] = std::move(shader);
+
 	}
 
 	return true;
@@ -274,10 +299,6 @@ bool DX11RE::CreateLegacyShaders()
 	}
 
 	if (!CreateLegacyShader<FogShaderClass>(_hwnd, _fogShader)) {
-		return false;
-	}
-
-	if (!CreateLegacyShader<ClipPlaneShaderClass>(_hwnd, _clipPlaneShader)) {
 		return false;
 	}
 
@@ -306,10 +327,6 @@ bool DX11RE::CreateLegacyShaders()
 	}
 
 	if (!CreateLegacyShader<FireShaderClass>(_hwnd, _fireShader)) {
-		return false;
-	}
-
-	if (!CreateLegacyShader<FadeShaderClass>(_hwnd, _fadeShader)) {
 		return false;
 	}
 
@@ -347,9 +364,10 @@ DX11RE::DX11RenderUnit::DX11RenderUnit()
 
 }
 
-void DX11RE::DX11RenderUnit::Initialize(DX11RE* engine, const char* modelAddr, const char* materialAddr)
+void DX11RE::DX11RenderUnit::Initialize(DX11RE* engine, const std::string& modelAddr, const std::string& materialAddr)
 {
 	_modelId = engine->RegisterModel(modelAddr);
+	int i = _modelId;
 	_material = engine->RegisterMaterial(materialAddr);
 }
 

@@ -1,0 +1,20 @@
+{
+    "shader": "fade",
+    "textures" : [
+        "./Assets/textures/fire01.tga"
+    ],
+    "property" : [
+        {
+            "name": "FadeBuffer",
+            "value": [{
+                "type": "float",
+                "value": 0.5
+            },
+            {
+                "type": "float3",
+                "value": [ 0, 0, 0 ]
+
+            }]
+        }
+    ]
+}

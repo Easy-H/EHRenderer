@@ -13,8 +13,8 @@ TextureShaderClass::TextureShaderClass(const TextureShaderClass&)
 
 TextureShaderClass::~TextureShaderClass()
 {
-}
 
+}
 
 bool TextureShaderClass::Initialize(ID3D11Device* device, HWND hwnd)
 {

@@ -1,6 +1,6 @@
 ﻿# CMakeList.txt: EHRenderer에 대한 CMake 프로젝트, 여기에 소스를 포함하고
 # 프로젝트 특정 논리를 정의합니다.
-# 
+#  
 
 # 이 프로젝트의 실행 파일에 소스를 추가합니다.
 add_executable (EHRenderer WIN32
@@ -69,7 +69,9 @@ add_executable (EHRenderer WIN32
 	"DirectX11/Shader/Ssao/SsaoShaderClass.cpp"
 	"DirectX11/Shader/Ssao/SsaoBlurShaderClass.cpp"
 	"DirectX11/Shader/GBuffer/GBufferShaderClass.cpp" "ResourceManager.cpp"
-	"Data/Transform.cpp"  "Data/Material.cpp")
+	"Data/Transform.cpp"  "Data/Material.cpp"
+	"DirectX11/Shader/DX11Shader.cpp"	
+ "Data/MaterialUtils.hpp")
 	
 
 # target_link_libraries (EHRenderer PUBLIC "wrl.lib")
