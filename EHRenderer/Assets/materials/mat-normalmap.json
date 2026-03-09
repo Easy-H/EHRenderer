@@ -1,0 +1,7 @@
+{
+    "shader": "normalmap",
+    "textures" : [
+        "./Assets/textures/stone01.tga",
+        "./Assets/textures/normal01.tga"
+    ]
+}

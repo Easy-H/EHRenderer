@@ -32,6 +32,14 @@ bool Material::Initialize(RenderEngineBase* engine, const std::string& addr)
 	_slotInforSize = _shader->GetSlotCnt();
 	_slotInfor = std::make_unique<SlotInfor[]>(_slotInforSize);
 
+	for (int i = 0; i < _slotInforSize; i++) {
+		size_t size;
+		_shader->GetSlot(i, size);
+
+		_slotInfor[i].size = size;
+		_slotInfor[i].isReset = true;
+	}
+
 	if (data.contains("property")) {
 
 		int propertyCnt = data["property"].size();
@@ -39,16 +47,14 @@ bool Material::Initialize(RenderEngineBase* engine, const std::string& addr)
 		for (int i = 0; i < propertyCnt; i++) {
 			nlohmann::json p = data["property"][i];
 
-			int slotIdx;
-			size_t size;
-			_shader->GetSlot(p["name"].get<std::string>(), slotIdx, size);
+			int slotIdx = _shader->GetSlotIdx(p["name"].get<std::string>());
 
 			if (slotIdx < 0) continue;
-			
-			nlohmann::json value = p["value"];
-			_slotInfor[slotIdx].size = size;
+
 			_slotInfor[slotIdx].isReset = false;
 			_slotInfor[slotIdx].value = std::make_unique<char[]>(_slotInfor[slotIdx].size);
+			
+			nlohmann::json value = p["value"];
 
 			char* ptr = &(_slotInfor[slotIdx].value[0]);
 

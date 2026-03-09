@@ -136,7 +136,7 @@ bool DX11Shader::SetConstantBuffer(ID3D11Device* device,
 	ID3D11ShaderReflection* reflection, D3D11_SHADER_DESC shaderDesc, int& startIdx)
 {
 
-	startIdx = _slotData.size();
+	startIdx = _slotInfo.size();
 
 	for (unsigned int i = 0; i < shaderDesc.ConstantBuffers; i++) {
 		ID3D11ShaderReflectionConstantBuffer* buffer = reflection->GetConstantBufferByIndex(i);
@@ -165,7 +165,7 @@ bool DX11Shader::SetConstantBuffer(ID3D11Device* device,
 		slotInfor->size = bufferDesc.Size;
 		slotInfor->slot = cBuffer;
 
-		_slotData.push_back(std::move(slotInfor));
+		_slotInfo.push_back(std::move(slotInfor));
 		
 		_slotMap[bufferDesc.Name] = startIdx + i;
 	}
@@ -181,30 +181,8 @@ bool DX11Shader::Render(int indexCount, const Transform* position)
 {
 	ID3D11DeviceContext* deviceContext = DX11RE::GetInstance().GetDeviceContext();
 
-	XMMATRIX viewMatrix, projectionMatrix;
-
-	DX11RE::GetInstance().GetView(viewMatrix);
-	DX11RE::GetInstance().GetProjection(projectionMatrix);
-
-	XMMATRIX worldMatrix;
-
-	GetXMMATRIX(position, worldMatrix);
-
-	MatrixBufferType matrix = {
-		XMMatrixTranspose(worldMatrix),
-		XMMatrixTranspose(viewMatrix),
-		XMMatrixTranspose(projectionMatrix)
-	};
-
-	SetSlot(_matrixBufferSlot, 0, &matrix, sizeof(MatrixBufferType));
-
-	for (int i = _vertexSlotStartIdx; i < _pixelSlotStartIdx; i++) {
-		deviceContext->VSSetConstantBuffers(_slotData[i]->slotIdx, 1, _slotData[i]->slot.GetAddressOf());
-	}
-
-	for (int i = _pixelSlotStartIdx; i < _slotData.size(); i++) {
-		deviceContext->PSSetConstantBuffers(_slotData[i]->slotIdx, 1, _slotData[i]->slot.GetAddressOf());
-	}
+	GetShaderParameter(position);
+	SetShaderParameter(deviceContext);
 
 	deviceContext->IASetInputLayout(_inputLayout.Get());
 	deviceContext->VSSetShader(_vertexShader.Get(), nullptr, 0);
@@ -230,32 +208,54 @@ void DX11Shader::SetTargetPS(WCHAR* psFilename, const char* psFunc)
 	_psFunc = psFunc;
 }
 
-int DX11Shader::GetSlotCnt()
+void DX11Shader::AddStrategy(ShaderStrategyBase* strategy)
 {
-	return _slotData.size();
+	int slotIdx = strategy->Bind(this);
+	
+	if (slotIdx < 0) return;
+
+	std::unique_ptr<StrategyInfo> info = std::make_unique<StrategyInfo>();
+
+	info->slotId = slotIdx;
+	info->strategy = strategy;
+
+	_strategyInfo.push_back(std::move(info));
+	_strategySet.insert(slotIdx);
 }
 
-void DX11Shader::GetSlot(const std::string& name, int& slotId, size_t& size)
+int DX11Shader::GetSlotIdx(const std::string& name)
 {
-
 	if (!_slotMap.contains(name)) {
-		slotId = -1;
+		return -1;
+	}
+
+	return _slotMap[name];
+}
+
+int DX11Shader::GetSlotCnt()
+{
+	return _slotInfo.size();
+}
+
+void DX11Shader::GetSlot(int slotId, size_t& size)
+{
+	//DX11ShaderBase::GetSlot(slotId, size);
+	if (slotId < 0) {
 		return;
 	}
 
-	slotId = _slotMap[name];
-	size = _slotData[slotId]->size;
+	size = _slotInfo[slotId]->size;
 
 }
 
 void DX11Shader::SetSlot(int slotId, int slotOffset, void* valuePtr, size_t size)
 {
-
+	
 	ID3D11DeviceContext* deviceContext = DX11RE::GetInstance().GetDeviceContext();
 
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 
-	if (FAILED(deviceContext->Map(_slotData[slotId]->slot.Get(),
+	if (FAILED(deviceContext->Map(_slotInfo[slotId]->slot.Get(),
 		0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource))) {
 		return;
 	}
@@ -264,20 +264,21 @@ void DX11Shader::SetSlot(int slotId, int slotOffset, void* valuePtr, size_t size
 
 	memcpy(ptr + slotOffset, valuePtr, size);
 
-	deviceContext->Unmap(_slotData[slotId]->slot.Get(), 0);
-	_slotData[slotId]->isReset = false;
+	deviceContext->Unmap(_slotInfo[slotId]->slot.Get(), 0);
+	_slotInfo[slotId]->isReset = false;
 
 }
 
 void DX11Shader::ResetSlot(int slotId, size_t size)
 {
+	if (_strategySet.contains(slotId)) return;
 	if (slotId == _matrixBufferSlot) return;
 
 	ID3D11DeviceContext* deviceContext = DX11RE::GetInstance().GetDeviceContext();
 
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 
-	if (FAILED(deviceContext->Map(_slotData[slotId]->slot.Get(),
+	if (FAILED(deviceContext->Map(_slotInfo[slotId]->slot.Get(),
 		0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource))) {
 		return;
 	}
@@ -286,7 +287,26 @@ void DX11Shader::ResetSlot(int slotId, size_t size)
 
 	ZeroMemory(ptr, size);
 
-	deviceContext->Unmap(_slotData[slotId]->slot.Get(), 0);
-	_slotData[slotId]->isReset = true;
+	deviceContext->Unmap(_slotInfo[slotId]->slot.Get(), 0);
+	_slotInfo[slotId]->isReset = true;
 
+}
+
+void DX11Shader::GetShaderParameter(const Transform* position)
+{
+	for (int i = 0; i < _strategyInfo.size(); i++) {
+		_strategyInfo[i]->strategy->SetSlot(this, _strategyInfo[i]->slotId);
+	}
+}
+
+void DX11Shader::SetShaderParameter(ID3D11DeviceContext* deviceContext)
+{
+
+	for (int i = _vertexSlotStartIdx; i < _pixelSlotStartIdx; i++) {
+		deviceContext->VSSetConstantBuffers(_slotInfo[i]->slotIdx, 1, _slotInfo[i]->slot.GetAddressOf());
+	}
+
+	for (int i = _pixelSlotStartIdx; i < _slotInfo.size(); i++) {
+		deviceContext->PSSetConstantBuffers(_slotInfo[i]->slotIdx, 1, _slotInfo[i]->slot.GetAddressOf());
+	}
 }

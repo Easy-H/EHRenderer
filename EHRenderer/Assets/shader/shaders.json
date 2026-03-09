@@ -1,7 +1,6 @@
 [
     {
         "name": "texture",
-        "type": "DX11Shader",
         "VS": {
             "HLSL": "./Assets/shader/HLSL/Texture/Texture.vs",
             "Func": "TextureVertexShader"
@@ -13,7 +12,6 @@
     },
     {
         "name": "multitexture",
-        "type": "DX11Shader",
         "VS": {
             "HLSL": "./Assets/shader/HLSL/Texture/MultiTexture.vs",
             "Func": "MultiTextureVertexShader"
@@ -25,7 +23,6 @@
     },
     {
         "name": "depth",
-        "type": "DX11Shader",
         "VS": {
             "HLSL": "./Assets/shader/HLSL/Depth.vs",
             "Func": "DepthVertexShader"
@@ -37,7 +34,6 @@
     },
     {
         "name": "clipplane",
-        "type": "DX11Shader",
         "VS": {
             "HLSL": "./Assets/shader/HLSL/ClipPlane.vs",
             "Func": "ClipPlaneVertexShader"
@@ -49,7 +45,6 @@
     },
     {
         "name": "alphamap",
-        "type": "DX11Shader",
         "VS": {
             "HLSL": "./Assets/shader/HLSL/Alphamap.vs",
             "Func": "AlphaMapVertexShader"
@@ -61,7 +56,31 @@
     },
     {
         "name": "fade",
-        "type": "DX11Shader",
+        "VS": {
+            "HLSL": "./Assets/shader/HLSL/Fade.vs",
+            "Func": "FadeVertexShader"
+        },
+        "PS": {
+            "HLSL": "./Assets/shader/HLSL/Fade.ps",
+            "Func": "FadePixelShader"
+        }
+    },
+    {
+        "name": "normalmap",
+        "VS": {
+            "HLSL": "./Assets/shader/HLSL/NormalMap.vs",
+            "Func": "NormalMapVertexShader"
+        },
+        "PS": {
+            "HLSL": "./Assets/shader/HLSL/NormalMap.ps",
+            "Func": "NormalMapPixelShader"
+        },
+        "strategy": [
+            "LightStrategy"
+        ]
+    },
+    {
+        "name": "light",
         "VS": {
             "HLSL": "./Assets/shader/HLSL/Fade.vs",
             "Func": "FadeVertexShader"

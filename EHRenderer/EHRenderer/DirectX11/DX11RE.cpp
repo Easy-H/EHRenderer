@@ -7,6 +7,10 @@
 #include "Object/CameraClass.hpp"
 #include "Object/LightClass.hpp"
 
+#include "Shader/ShaderStrategy/ShaderStrategyBase.hpp"
+#include "Shader/ShaderStrategy/WVPShaderStrategy.hpp"
+#include "Shader/ShaderStrategy/LightShaderStrategy.hpp"
+
 #include "Shader/Particle/ParticleShaderClass.hpp"
 #include "Shader/Particle/ParticleSystemClass.hpp"
 #include "Data/DeferredBuffersClass.hpp"
@@ -15,6 +19,7 @@
 #include "Data/SpriteClass.hpp"
 #include "Data/FontClass.hpp"
 #include "Data/TextClass.hpp"
+#include "../Data/Transform.hpp"
 
 #include "ShaderManager.hpp"
 #include "Shader/DX11Shader.hpp"
@@ -109,6 +114,10 @@ bool DX11RE::Initialize(int screenWidth, int screenHeight, bool fullscreen)
 	_camera->SetPosition(0.f, 4.f, -6.f);
 	_camera->SetRotation(30.f, 0.f, 0.f);
 	_camera->SetProjectionParameters(3.141592 / 2.f, aspectRatio, SCREEN_DEPTH, SCREEN_NEAR);
+
+	_wvpShaderStrategy = std::make_unique<WVPShaderStrategy>();
+
+	_strategyMap["LightStrategy"] = std::make_unique<LightShaderStrategy>();
 
 	if (!CreateLegacyShaders()) {
 		return false;
@@ -223,6 +232,23 @@ bool DX11RE::Render()
 	_camera->Render();
 
 	for (int i = 0; i < _renderTargets.size(); i++) {
+		
+		XMMATRIX worldMatrix;
+		Transform* position = nullptr;
+
+		if (position == nullptr) {
+			worldMatrix = XMMatrixTranslation(0.f, 0.f, 0.f);
+		}
+		else {
+			worldMatrix = XMMatrixTranslation(position->positionX, position->positionY, position->positionZ);
+		}
+
+		XMMATRIX viewMatrix, projectionMatrix;
+
+		_camera->GetViewMatrix(viewMatrix);
+		_direct3D->GetProjectionMatrix(projectionMatrix);
+		_wvpShaderStrategy->SetWVP(worldMatrix, viewMatrix, projectionMatrix);
+
 		if (!_renderTargets[i]->Render(this))
 			return false;
 	}
@@ -237,6 +263,11 @@ bool DX11RE::Render()
 ID3D11ShaderResourceView* DX11RE::GetTexture(int id)
 {
 	return _textures[id]->GetTexture();
+}
+
+void DX11RE::GetLight(LightClass& light, int id)
+{
+	light = *_lights[id];
 }
 
 bool DX11RE::CreateShaders()
@@ -274,6 +305,15 @@ bool DX11RE::CreateShaders()
 		
 		if (!shader->Initialize(_direct3D->GetDevice(), _hwnd)) {
 			return false;
+		}
+
+		shader->AddStrategy(_wvpShaderStrategy.get());
+
+		if (data[i].contains("strategy")) {
+			nlohmann::json strategys = data[i]["strategy"];
+			for (int j = 0; j < strategys.size(); j++) {
+				shader->AddStrategy(_strategyMap[strategys[j]].get());
+			}
 		}
 
 		_shaderMap[name] = std::move(shader);

@@ -75,6 +75,9 @@ class BlurShaderClass;
 class ParticleSystemClass;
 class ParticleShaderClass;
 
+class ShaderStrategyBase;
+class WVPShaderStrategy;
+
 using namespace DirectX;
 
 const bool VSYNC_ENABLED = true;
@@ -124,6 +127,8 @@ public:
 	ID3D11DeviceContext* GetDeviceContext();
 	ID3D11ShaderResourceView* GetTexture(int id);
 
+	void GetLight(LightClass& light, int id);
+
 private:
 	bool CreateLegacyShaders();
 	bool CreateShaders();
@@ -146,6 +151,9 @@ private:
 
 	std::unordered_map<std::string, int> _textureMap;
 	std::vector<std::unique_ptr<TextureClass>> _textures;
+
+	std::unique_ptr<WVPShaderStrategy> _wvpShaderStrategy;
+	std::unordered_map<std::string, std::unique_ptr<ShaderStrategyBase>> _strategyMap;
 
 	HWND _hwnd;
 

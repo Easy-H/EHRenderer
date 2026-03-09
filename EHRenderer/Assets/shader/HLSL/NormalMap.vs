@@ -5,7 +5,7 @@ cbuffer MatrixBuffer {
 };
 
 struct VertexInputType {
-	float4 position : POSITION;
+	float3 position : POSITION;
 	float2 tex : TEXCOORD0;
 	float3 normal: NORMAL;
 	float3 tangent: TANGENT;
@@ -23,10 +23,10 @@ struct PixelInputType {
 
 PixelInputType NormalMapVertexShader(VertexInputType input) {
 	PixelInputType output;
-	
-	input.position.w = 1.0f;
 
-	output.position = mul(input.position, worldMatrix);
+	float4 inputPosition = float4(input.position, 1.f);
+
+	output.position = mul(inputPosition, worldMatrix);
 	output.position = mul(output.position, viewMatrix);
 	output.position = mul(output.position, projectionMatrix);
 

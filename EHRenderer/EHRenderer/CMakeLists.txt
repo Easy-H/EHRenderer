@@ -70,8 +70,10 @@ add_executable (EHRenderer WIN32
 	"DirectX11/Shader/Ssao/SsaoBlurShaderClass.cpp"
 	"DirectX11/Shader/GBuffer/GBufferShaderClass.cpp" "ResourceManager.cpp"
 	"Data/Transform.cpp"  "Data/Material.cpp"
-	"DirectX11/Shader/DX11Shader.cpp"	
- "Data/MaterialUtils.hpp")
+	"DirectX11/Shader/DX11Shader.cpp"
+	"Data/MaterialUtils.hpp" "Data/Scene.cpp"
+	"DirectX11/Shader/ShaderStrategy/LightShaderStrategy.cpp"
+	"DirectX11/Shader/ShaderStrategy/WVPShaderStrategy.cpp")
 	
 
 # target_link_libraries (EHRenderer PUBLIC "wrl.lib")

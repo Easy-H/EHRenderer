@@ -27,7 +27,7 @@ bool ApplicationClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	DX11RE::GetInstance().Initialize(screenWidth, screenHeight, FULL_SCREEN);
 	
 	DX11RE::GetInstance().RegisterRenderUnit(
-		"./Assets/models/cube.txt", "./Assets/materials/mat-fade.json", nullptr);
+		"./Assets/models/cube.txt", "./Assets/materials/mat-normalmap.json", nullptr);
 	DX11RE::GetInstance().RegisterRenderUnit(
 		"./Assets/models/floor.txt", "./Assets/materials/mat-alphamap.json", nullptr);
 	/*
