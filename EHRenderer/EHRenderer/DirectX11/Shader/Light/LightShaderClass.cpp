@@ -39,9 +39,10 @@ bool LightShaderClass::Render(int indexCount, const Transform* position)
 
 	GetXMMATRIX(position, worldMatrix);
 
-	LightClass* light = DX11RE::GetInstance().GetLights(0);
+	LightClass light;
+	DX11RE::GetInstance().GetLight(light, 0);
 
-	XMFLOAT3 lightDirection = light->GetDirection();
+	XMFLOAT3 lightDirection = light.GetDirection();
 
 	if (!SetShaderParameters(deviceContext,
 		worldMatrix, viewMatrix, projectionMatrix, lightDirection)) return false;

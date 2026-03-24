@@ -121,13 +121,13 @@ public:
 
 	void GetView(XMMATRIX& viewMatrix);
 	void GetProjection(XMMATRIX& projectionMatrix);
-	LightClass* GetLights(int idx) { return _lights[idx].get(); }
 
 	ID3D11Device* GetDevice();
 	ID3D11DeviceContext* GetDeviceContext();
 	ID3D11ShaderResourceView* GetTexture(int id);
 
 	void GetLight(LightClass& light, int id);
+	int GetLightCnt();
 
 private:
 	bool CreateLegacyShaders();

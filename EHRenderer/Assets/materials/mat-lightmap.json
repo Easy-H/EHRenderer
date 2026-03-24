@@ -1,0 +1,7 @@
+{
+    "shader": "lightmap",
+    "textures" : [
+        "./Assets/textures/stone01.tga",
+        "./Assets/textures/light01.tga"
+    ]
+}

@@ -74,7 +74,7 @@ add_executable (EHRenderer WIN32
 	"Data/MaterialUtils.hpp" "Data/Scene.cpp"
 	"DirectX11/Shader/ShaderStrategy/LightShaderStrategy.cpp"
 	"DirectX11/Shader/ShaderStrategy/WVPShaderStrategy.cpp")
-	
+	 
 
 # target_link_libraries (EHRenderer PUBLIC "wrl.lib")
 target_link_libraries (EHRenderer PUBLIC "dxgi.lib")

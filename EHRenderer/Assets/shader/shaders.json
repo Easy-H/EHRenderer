@@ -82,12 +82,26 @@
     {
         "name": "light",
         "VS": {
-            "HLSL": "./Assets/shader/HLSL/Fade.vs",
-            "Func": "FadeVertexShader"
+            "HLSL": "./Assets/shader/HLSL/Light.vs",
+            "Func": "LightVertexShader"
         },
         "PS": {
-            "HLSL": "./Assets/shader/HLSL/Fade.ps",
-            "Func": "FadePixelShader"
+            "HLSL": "./Assets/shader/HLSL/Light.ps",
+            "Func": "LightPixelShader"
+        },
+        "strategy": [
+            "LightStrategy"
+        ]
+    },
+    {
+        "name": "lightmap",
+        "VS": {
+            "HLSL": "./Assets/shader/HLSL/LightMap.vs",
+            "Func": "LightMapVertexShader"
+        },
+        "PS": {
+            "HLSL": "./Assets/shader/HLSL/LightMap.ps",
+            "Func": "LightMapPixelShader"
         }
     }
 ]

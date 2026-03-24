@@ -24,7 +24,6 @@
 #include "ShaderManager.hpp"
 #include "Shader/DX11Shader.hpp"
 #include "Shader/Color/ColorShaderClass.hpp"
-#include "Shader/NormalMap/NormalMapShaderClass.hpp"
 #include "Shader/SpecMap/SpecMapShaderClass.hpp"
 #include "Shader/LightMap/LightMapShaderClass.hpp"
 #include "Shader/Light/LightShaderClass.hpp"
@@ -144,6 +143,7 @@ bool DX11RE::Initialize(int screenWidth, int screenHeight, bool fullscreen)
 	_lights[1]->SetPosition(-5.f, 8.f, -5.f);
 	_lights[1]->SetProjectionParameters(3.141592 / 2.f, 1.f, SCREEN_NEAR, SCREEN_DEPTH);
 	_lights[1]->SetLookAt(0, 0, 0);
+	_lights[1]->SetDirection(0.0f, -1.f, 0.f);
 
 	return true;
 }
@@ -268,6 +268,11 @@ ID3D11ShaderResourceView* DX11RE::GetTexture(int id)
 void DX11RE::GetLight(LightClass& light, int id)
 {
 	light = *_lights[id];
+}
+
+int DX11RE::GetLightCnt()
+{
+	return _lights.size();
 }
 
 bool DX11RE::CreateShaders()

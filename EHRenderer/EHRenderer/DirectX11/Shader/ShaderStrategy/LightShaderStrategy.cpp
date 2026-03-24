@@ -19,7 +19,7 @@ int LightShaderStrategy::Bind(ShaderBaseBase* targetShader)
 void LightShaderStrategy::SetSlot(ShaderBaseBase* targetShader, int slotIdx)
 {
 	LightClass light;
-	DX11RE::GetInstance().GetLight(light, 0);
+	DX11RE::GetInstance().GetLight(light, 1);
 
 	_buffer->diffuseColor = XMFLOAT4(1.f, 1.f, 1.f, 1.f);
 	_buffer->lightDirection = light.GetDirection();
